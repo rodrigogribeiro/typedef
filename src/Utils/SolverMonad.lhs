@@ -5,7 +5,8 @@ A monad for solving constraints
 
 > import Data.Map (Map)
 > import qualified Data.Map as Map
-  
+
+> import Control.Monad.Except    
 > import Control.Monad.Identity
 > import Control.Monad.State
 
@@ -14,12 +15,20 @@ A monad for solving constraints
 
 Monad definition
 
+> type Ctx = Map Name Type
+
+> type FieldMap = Map Name Fields      
+
 > data Conf = Conf {
 >                counter :: Int
->             ,  ctx     :: Map Name Type
+>             ,  ctx     :: Ctx
+>             ,  fieldMap  :: FieldMap              
 >             }      
 
-> type SolverM a = (StateT Conf Identity) a
+> type SolverM a = ExceptT String (StateT Conf Identity) a
+
+> runSolverM :: Conf -> SolverM a -> (Either String a, Conf)
+> runSolverM c m = runIdentity (runStateT (runExceptT m) c)              
 
 Generating fresh variables
 
@@ -36,3 +45,14 @@ Inserting a new definition
 >     = do
 >         s <- get
 >         put (s{ctx = Map.insert n t (ctx s)})     
+
+Inserting a new field
+
+> insertField :: Name -> Field -> SolverM ()
+> insertField n f = do
+>                     s <- get
+>                     let m = fieldMap s     
+>                     put $ case Map.lookup n (fieldMap s) of
+>                              Nothing -> s{fieldMap = Map.insert n [f] m }
+>                              Just fs -> s{fieldMap = Map.insert n (f:fs) m }           
+>                                     

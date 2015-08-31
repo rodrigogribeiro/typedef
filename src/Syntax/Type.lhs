@@ -16,7 +16,7 @@ Data type for representing C types
 
 > data Field = Field {
 >                fieldName :: Name
->              , fieldType :: CType
+>              , fieldType :: Type
 >              } deriving (Eq, Ord, Show, Data, Typeable)    
      
 > type Fields = [Field]     
@@ -35,16 +35,16 @@ Data type for representing C types
 >            | LongDoubleComplex
 >            | Void
 >            | Struct   { fields :: Fields     }
->            | Pointer  { unPointer :: CType   }
+>            | Pointer  { unPointer :: Type   }
 >            | Function { name      :: Name
->                       , retTy     :: CType               
->                       , params    :: [CType] }
+>                       , retTy     :: Type               
+>                       , params    :: [Type] }
 >            deriving (Eq , Ord, Show, Data, Typeable)
 
 
 > data Type = Simple CType         -- simple type
 >           | TypeDef CType Name   -- type def
->           | Var Name             -- type variables
+>           | Var Name             -- type variables 
 >           deriving (Eq, Ord, Show, Data, Typeable)
                           
 Instances for pretty printting types

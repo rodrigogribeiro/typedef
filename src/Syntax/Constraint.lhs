@@ -5,7 +5,9 @@ Constraints syntax
 
 > module Syntax.Constraint where
 
-> import Data.Generics (Data,Typeable)
+> import Data.Generics (Data, Typeable, everything, mkQ)
+> import Data.Set(Set)
+> import qualified Data.Set as Set
      
 > import Syntax.Type  
 > import Utils.Pretty  
@@ -36,8 +38,6 @@ Definition of a pretty printer
 >                        <+> equals <+> pprint t
 >     pprint Truth = text "true"                       
                          
-
-
 Auxiliar functions
 
 > isGround :: Constr -> Bool
