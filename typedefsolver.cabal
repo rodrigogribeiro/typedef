@@ -1,0 +1,49 @@
+name:                typedefsolver
+version:             0.1.0.0
+synopsis:            Solver for simple constraints and typedef inferencer.
+description:         README.md
+homepage:            http://github.com/githubuser/typedefsolver
+license:             BSD3
+license-file:        LICENSE
+author:              Example Author Name
+maintainer:          example@example.com
+copyright:           2010 Author Here
+category:            Web
+build-type:          Simple
+-- extra-source-files:
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Syntax.Type
+                     , Syntax.Constraint
+                     , Utils.Pretty
+                     , Solver.ConstrSolver
+  build-depends:       base >= 4.7 && < 5
+                       , parsec
+                       , pretty
+                       , mtl
+                       , containers
+                       , syb
+  default-language:    Haskell2010
+
+executable typedefsolver-exe
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  build-depends:       base
+                     , typedefsolver
+  default-language:    Haskell2010
+
+test-suite typedefsolver-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , typedefsolver
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/githubuser/typedefsolver
