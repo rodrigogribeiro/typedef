@@ -2,13 +2,13 @@ name:                typedefsolver
 version:             0.1.0.0
 synopsis:            Solver for simple constraints and typedef inferencer.
 description:         README.md
-homepage:            http://github.com/githubuser/typedefsolver
+homepage:            http://github.com/rodrigogribeiro/typedef
 license:             BSD3
 license-file:        LICENSE
-author:              Example Author Name
-maintainer:          example@example.com
-copyright:           2010 Author Here
-category:            Web
+author:              Rodrigo Ribeiro
+maintainer:          rodrigo@decsi.ufop.br
+copyright:           2015 Rodrigo
+category:            Language
 build-type:          Simple
 -- extra-source-files:
 cabal-version:       >=1.10

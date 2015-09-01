@@ -18,6 +18,12 @@ Substitution definition
 
 > type Subst = Map Name Type
 
+> nullSubst :: Subst
+> nullSubst = Map.empty
+
+> (+->) :: Name -> Type -> Subst
+> n +-> t = Map.singleton n t         
+
 > class Substitutable a where
 >     apply :: Subst -> a -> a
 >     fv    :: a -> Set Name
@@ -51,3 +57,14 @@ Substitution definition
 > instance Substitutable Constr where
 >     apply s = everywhere (mkT (\v@(Var n) -> maybe v id (Map.lookup n s)))
 >     fv = everything Set.union (mkQ Set.empty (\(Var n) -> Set.singleton n))
+
+
+Occurs check test
+
+> occurs :: Substitutable a => Name -> a -> Bool
+> occurs n t = n `Set.member` fv t          
+
+Composition
+
+> (@@) :: Subst -> Subst -> Subst
+> s1 @@ s2 = (Map.map (\t -> apply s1 t) s2) `Map.union` s1        

@@ -18,7 +18,7 @@ Definition of constraints
 >             | Constr :&: Constr   -- conjunction
 >             | Type :=: Type       -- equality
 >             | Has Name Field      -- field constraint
->             | Def Name Type       -- definition
+>             | Def Name Type       -- definition and its type
 >             | Truth               -- empty constraint  
 >             deriving (Eq, Ord, Show, Data, Typeable)
 

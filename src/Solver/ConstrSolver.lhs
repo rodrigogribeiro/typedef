@@ -1,3 +1,5 @@
+> {-# LANGUAGE FlexibleInstances #-}
+        
 The solver algorithm
 =============
 
@@ -10,6 +12,8 @@ Basically the algorithm performs 3 stages:
 
 > module Solver.ConstrSolver where
 
+> import Control.Monad(zipWithM)  
+> import Control.Monad.Except(throwError)  
 > import Control.Monad.State(gets)
   
 > import Data.Generics (everywhere, everything, mkT, mkQ)
@@ -20,7 +24,8 @@ Basically the algorithm performs 3 stages:
 
 > import Syntax.Type
 > import Syntax.Constraint
-> import Solver.Subst    
+> import Solver.Subst
+> import Utils.Pretty    
 > import Utils.SolverMonad    
 
 
@@ -70,4 +75,72 @@ Stage 3: unification of equality constraints
 > collect :: Constr -> [Constr]
 > collect = everything (++) (mkQ [] (\c@(_ :=: _) -> [c]))
 
+
+> class Unifiable a where
+>    unify :: a -> SolverM Subst           
+
+> instance (Substitutable a, Unifiable a) => Unifiable [a] where
+>    unify [] = return nullSubst
+>    unify (c:cs) = do
+>                     s <- unify c
+>                     s' <- unify (apply s cs)
+>                     return (s' @@ s)
+                      
+> instance Unifiable Constr where
+>     unify (t :=: t') = unify (t,t')
+>     unify c = throwError ("Impossible:\n" ++ (show $ pprint c))
+
+> instance Unifiable (Field,Field) where
+>     unify (f,f') = unify ((fieldType f),(fieldType f'))
+
+> instance Unifiable (Type,Type) where
+>     unify (Simple t, Simple t') = unify (t, t')
+>     unify (Var n, t)                               
+>         | occurs n t = occursCheckError n t
+>         | otherwise  = return (n +-> t)
+>     unify (t, Var n)                       
+>         | occurs n t = occursCheckError n t
+>         | otherwise  = return (n +-> t)
+>     unify (ty@(TypeDef t n), ty'@(TypeDef t' n'))
+>         | n == n' = unify (t, t')
+>         | otherwise = unificationError ty ty'
+>     unify (t, t') = unificationError t t'
+
+> instance Unifiable (CType, CType) where
+>     unify (Pointer t, Pointer t') = unify (t, t') 
+>     unify (Struct fs, Struct fs')
+>         = do
+>             ss <- mapM unify (zip fs fs')
+>             return (foldr (@@) nullSubst ss)
+>     unify (t@(Function n r ts), t'@(Function n' r' ts'))
+>                 | n == n' = do
+>                              s <- unify (r, r')
+>                              ss <- mapM unify (zip ts ts')
+>                              return (foldr (@@) nullSubst (ss ++ [s]))
+>                 | otherwise = unificationError t t'
+>     unify (t, t')
+>         | convertible t t' = return nullSubst
+>         | otherwise = unificationError t t'
+
+> convertible :: CType -> CType -> Bool
+> convertible t t' = t == t'
+                 
+> solverStage3 :: Constr -> SolverM Fields
+> solverStage3 c
+>     = do
+>          s <- unify (collect c)
+>          fs <- gets (concat . Map.elems . fieldMap)
+>          return (apply s fs)      
+
+
+Error messages
            
+> occursCheckError :: PPrint a => Name -> a -> SolverM b
+> occursCheckError n t = throwError $ show $ text "Variable\n"
+>                        <> pprint n <>
+>                        text "\noccurs in\n" <> pprint t               
+
+> unificationError :: PPrint a => a -> a -> SolverM b
+> unificationError t t' = throwError $ show $ text "Impossible to unify\n" <>
+>                         pprint t  <> text "with\n"   <>
+>                         pprint t' 

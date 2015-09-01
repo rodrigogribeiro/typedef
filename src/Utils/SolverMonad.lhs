@@ -18,7 +18,7 @@ Monad definition
 > type Ctx = Map Name Type
 
 > type FieldMap = Map Name Fields      
-
+  
 > data Conf = Conf {
 >                counter :: Int
 >             ,  ctx     :: Ctx

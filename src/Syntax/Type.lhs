@@ -34,7 +34,7 @@ Data type for representing C types
 >            | DoubleComplex
 >            | LongDoubleComplex
 >            | Void
->            | Struct   { fields :: Fields     }
+>            | Struct   { fields    :: Fields }
 >            | Pointer  { unPointer :: Type   }
 >            | Function { name      :: Name
 >                       , retTy     :: Type               
@@ -43,7 +43,7 @@ Data type for representing C types
 
 
 > data Type = Simple CType         -- simple type
->           | TypeDef CType Name   -- type def
+>           | TypeDef Type Name    -- type def
 >           | Var Name             -- type variables 
 >           deriving (Eq, Ord, Show, Data, Typeable)
                           
