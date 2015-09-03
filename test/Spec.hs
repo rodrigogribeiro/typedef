@@ -5,9 +5,9 @@ main :: IO ()
 main = defaultMain tests
 
 tests :: TestTree
-tests = TestGroup "Tests" [unitTests]
+tests = testGroup "Tests" [unitTests]
 
 unitTests = testGroup "Unit tests"
-               [ testCase "Solver stage 1 test for T0" $ undefined]
+               [ testCase "Solver test for T0" $ undefined]
 
                

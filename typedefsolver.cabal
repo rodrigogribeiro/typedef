@@ -43,7 +43,7 @@ test-suite typedefsolver-test
   main-is:             Spec.hs
   build-depends:       base
                      , typedefsolver
-                     , hunit
+                     , HUnit
                      , tasty
                      , tasty-hunit
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
