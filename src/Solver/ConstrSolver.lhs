@@ -8,13 +8,13 @@ Basically the algorithm performs 3 stages:
 1 - Create all fresh variables for existencial quantifiers, collects all definitions and field constraints
 2 - Expand all definitions types  
 3 - Solve all equality constraints and updates types in field constraints
-4 - Build all typedef's from the solution of unification
 
-> module Solver.ConstrSolver where
+
+> module Solver.ConstrSolver(solver) where
 
 > import Control.Monad(zipWithM)  
 > import Control.Monad.Except(throwError)  
-> import Control.Monad.State(gets)
+> import Control.Monad.State(gets, modify)
   
 > import Data.Generics (everywhere, everything, mkT, mkQ)
 > import Data.Map(Map)
@@ -26,8 +26,22 @@ Basically the algorithm performs 3 stages:
 > import Syntax.Constraint
 > import Solver.Subst
 > import Utils.Pretty    
-> import Utils.SolverMonad    
+> import Utils.SolverMonad
 
+Solver top-level interface    
+
+> solver :: Constr -> Conf -> Either String Conf       
+> solver c conf = case runSolverM conf (solve c) of
+>                    (e,c) -> either Left (const (Right c)) e
+       
+> solve :: Constr -> SolverM ()
+> solve c
+>     = do
+>         c1 <- solverStage1 c
+>         c2 <- solverStage2 c1
+>         solverStage3 c2
+
+       
 
 Stage 1: fresh variable creation and context building  
 
@@ -54,6 +68,11 @@ Stage 1: fresh variable creation and context building
 >              = insertField n f >> return Truth
 > solverStage1 (Def n t)
 >              = insertDef n t >> return Truth
+> solverStage1 (IsDefined n)
+>              = do
+>                 t <- lookupDef n
+>                 insertDef n t
+>                 return Truth               
 > solverStage1 c = return c               
 
 Stage 2: expand definitions
@@ -125,14 +144,13 @@ Stage 3: unification of equality constraints
 > convertible :: CType -> CType -> Bool
 > convertible t t' = t == t'
                  
-> solverStage3 :: Constr -> SolverM Fields
+> solverStage3 :: Constr -> SolverM ()
 > solverStage3 c
 >     = do
 >          s <- unify (collect c)
->          fs <- gets (concat . Map.elems . fieldMap)
->          return (apply s fs)      
-
-
+>          modify (\st -> st{fieldMap = Map.map (apply s) (fieldMap st)})     
+       
+           
 Error messages
            
 > occursCheckError :: PPrint a => Name -> a -> SolverM b

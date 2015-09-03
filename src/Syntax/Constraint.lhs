@@ -19,6 +19,7 @@ Definition of constraints
 >             | Type :=: Type       -- equality
 >             | Has Name Field      -- field constraint
 >             | Def Name Type       -- definition and its type
+>             | IsDefined Name      -- use of a possible type definition  
 >             | Truth               -- empty constraint  
 >             deriving (Eq, Ord, Show, Data, Typeable)
 
@@ -36,6 +37,7 @@ Definition of a pretty printer
 >                                               pprint f)
 >     pprint (Def n t) = text "def" <+> pprint n
 >                        <+> equals <+> pprint t
+>     pprint (IsDefined n) = text "IsDefined" <+> pprint n                       
 >     pprint Truth = text "true"                       
                          
 Auxiliar functions

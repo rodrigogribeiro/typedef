@@ -20,8 +20,8 @@ Monad definition
 > type FieldMap = Map Name Fields      
   
 > data Conf = Conf {
->                counter :: Int
->             ,  ctx     :: Ctx
+>                counter   :: Int
+>             ,  ctx       :: Ctx
 >             ,  fieldMap  :: FieldMap              
 >             }      
 
@@ -44,7 +44,17 @@ Inserting a new definition
 > insertDef n t
 >     = do
 >         s <- get
->         put (s{ctx = Map.insert n t (ctx s)})     
+>         put (s{ctx = Map.insert n t (ctx s)})
+
+Looking up a definition and generating a fresh variable         
+
+> lookupDef :: Name -> SolverM Type
+> lookupDef n
+>     = do
+>         m <- gets (Map.lookup n . ctx)
+>         maybe (fresh >>= \t -> insertDef n t >> return t)
+>               return 
+>               m
 
 Inserting a new field
 
