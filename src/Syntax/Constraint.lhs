@@ -37,8 +37,8 @@ Definition of a pretty printer
 >                                               pprint f)
 >     pprint (Def n t) = text "def" <+> pprint n
 >                        <+> equals <+> pprint t
->     pprint (IsDefined n) = text "IsDefined" <+> pprint n                       
->     pprint Truth = text "true"                       
+>     pprint (IsDefined n) = text "isdef" <+> pprint n                       
+>     pprint Truth = text "True"                       
                          
 Auxiliar functions
 
