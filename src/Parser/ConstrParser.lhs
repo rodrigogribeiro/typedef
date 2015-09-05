@@ -13,12 +13,49 @@ A parsec based parser for constraints
 > import qualified Text.Parsec.Expr as Ex
 
 > import Syntax.Type
-> import Syntax.Constraint    
+> import Syntax.Constraint hiding (dot)  
 
 A type for parsers
   
 > type Parser a = ParsecT String () Identity a
 
+Top level parsing function
+
+> parser :: String -> Either String Constr
+> parser = either (Left . show) Right . parse constraintParser ""
+  
+Constraint parser
+
+> constraintParser :: Parser Constr
+> constraintParser = Ex.buildExpressionParser opTable ctrParser
+>                    where
+>                      opTable = [[ Ex.Infix conjParser Ex.AssocRight ]]
+>                      conjParser = (:&:) <$ comma 
+
+> ctrParser :: Parser Constr
+> ctrParser = choice [ existsParser, eqParser, hasParser
+>                    , defParser, isDefParser, truthParser ]
+
+> existsParser :: Parser Constr
+> existsParser = reserved "exists" *> (Exists <$> nameParser <*>
+>                                                 (dot *> constraintParser))
+
+> eqParser :: Parser Constr
+> eqParser = (:=:) <$> typeParser <*> (reservedOp "=" *> typeParser)
+
+> hasParser :: Parser Constr
+> hasParser = reserved "has" *> parens (Has <$> nameParser <*>
+>                                               (comma *> fieldParser))
+
+> defParser :: Parser Constr
+> defParser = reserved "def" *> (Def <$> nameParser <*> (colon *> typeParser))
+
+> isDefParser :: Parser Constr
+> isDefParser = reserved "isdef" *> (IsDefined <$> nameParser)
+
+> truthParser :: Parser Constr
+> truthParser = Truth <$ reserved "True"
+  
 Type parser
 
 > typeParser :: Parser Type
@@ -81,8 +118,11 @@ CType parser
 > structParser = Struct <$> (reserved "struct" *>
 >                      braces  (fieldParser `sepBy` comma))
 
+> arrowTypeParser :: Parser [Type]
+> arrowTypeParser = undefined
+
 > functionParser :: Parser CType
-> functionParser = f <$> nameParser <*> (colon *> (typeParser `sepBy1` reservedOp "->"))
+> functionParser = f <$> nameParser <*> (colon *> arrowTypeParser)
 >                  where
 >                     f n [] = error "Impossible! Function Parser!"
 >                     f n (t : ts) = Function n t ts 
@@ -111,6 +151,9 @@ Lexer definition
 > braces :: Parser a -> Parser a
 > braces = Tk.braces constrLexer
 
+> parens :: Parser a -> Parser a
+> parens = Tk.parens constrLexer          
+
 > comma :: Parser String
 > comma = Tk.comma constrLexer
 
@@ -132,7 +175,7 @@ Constraint language def
 >                                  , "short", "long", "int", "float"
 >                                  , "double", "_Bool", "_Complex"
 >                                  , "char", "signed", "unsigned"
->                                  , "void", "struct"]
+>                                  , "void", "struct", "has"]
 >             }             
 
               
