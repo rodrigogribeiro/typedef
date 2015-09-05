@@ -22,56 +22,78 @@ A type for parsers
 Type parser
 
 > typeParser :: Parser Type
-> typeParser = undefined              
+> typeParser = (Simple <$> cTypeParser) <|> typeDefParser
+
+type def parser
+
+> typeDefParser :: Parser Type
+> typeDefParser = reserved "typedef" *> braces (TypeDef <$> typeParser <*> nameParser)
+               
+CType parser
+  
+> cTypeParser :: Parser CType
+> cTypeParser = choice [ boolParser, charParser, shortIntParser, intParser
+>                      , longIntParser, longLongIntParser, floatParser
+>                      , doubleParser, longDoubleParser, voidParser
+>                      , structParser,  functionParser, pointerParser ]             
 
 > fieldParser :: Parser Field
 > fieldParser = Field <$> nameParser <*> typeParser               
 
-> boolParser :: Parser Type
-> boolParser = const (Simple CBool) <$> reserved "_Bool"
+> boolParser :: Parser CType
+> boolParser = CBool <$ reserved "_Bool"
 
-> charParser :: Parser Type
-> charParser =  Simple . Char <$> signedParser <* reserved "char"
+> charParser :: Parser CType
+> charParser =  Char <$> signedParser <* reserved "char"
 
-> shortIntParser :: Parser Type
-> shortIntParser = Simple . ShortInt <$> signedParser <* reserved "short"
->                                                     <* reserved "int"
+> shortIntParser :: Parser CType
+> shortIntParser =  ShortInt <$> signedParser <* reserved "short"
+>                                             <* reserved "int"
 
-> intParser :: Parser Type
-> intParser = Simple . Int <$> signedParser <* reserved "int"
+> intParser :: Parser CType
+> intParser = Int <$> signedParser <* reserved "int"
 
-> longIntParser :: Parser Type
-> longIntParser = Simple . LongInt <$> signedParser <* reserved "long"
->                                                   <* reserved "int"
+> longIntParser :: Parser CType
+> longIntParser = LongInt <$> signedParser <* reserved "long"
+>                                          <* reserved "int"
 
-> longLongIntParser :: Parser Type
-> longLongIntParser = Simple . LongLongInt <$> signedParser <* reserved "long"
->                                                           <* reserved "long"
->                                                           <* reserved "int"
+> longLongIntParser :: Parser CType
+> longLongIntParser = LongLongInt <$> signedParser <* reserved "long"
+>                                                  <* reserved "long"
+>                                                  <* reserved "int"
 
-> floatParser :: Parser Type
-> floatParser = Simple <$> (reserved "float" *>
->                     option Float (FloatComplex <$ reserved "_Complex"))
+> floatParser :: Parser CType
+> floatParser = reserved "float" *>
+>                     option Float (FloatComplex <$ reserved "_Complex")
 
-> doubleParser :: Parser Type
-> doubleParser = Simple <$> (reserved "double" *>
->                     option Double (DoubleComplex <$ reserved "_Complex"))
+> doubleParser :: Parser CType
+> doubleParser =  reserved "double" *>
+>                     option Double (DoubleComplex <$ reserved "_Complex")
 
-> longDoubleParser :: Parser Type
-> longDoubleParser =  Simple LongDouble <$ reserved "long"   <*
->                                          reserved "double"
+> longDoubleParser :: Parser CType
+> longDoubleParser =  LongDouble <$ reserved "long"   <*
+>                                   reserved "double"
 
-> voidParser :: Parser Type
-> voidParser = Simple Void <$ reserved "void"
+> voidParser :: Parser CType
+> voidParser = Void <$ reserved "void"
 
-> structParser :: Parser Type
-> structParser = (Simple . Struct) <$> (reserved "struct" *>
+> structParser :: Parser CType
+> structParser = Struct <$> (reserved "struct" *>
 >                      braces  (fieldParser `sepBy` comma))
+
+> functionParser :: Parser CType
+> functionParser = f <$> nameParser <*> (colon *> (typeParser `sepBy1` reservedOp "->"))
+>                  where
+>                     f n [] = error "Impossible! Function Parser!"
+>                     f n (t : ts) = Function n t ts 
+                       
+> pointerParser :: Parser CType
+> pointerParser = Pointer <$> typeParser <* starParser
                                                                                                               
 > signedParser :: Parser Bool
-> signedParser = (const True)  <$> reserved "signed" <|>
->                (const False) <$> reserved "unsigned"
-                 
+> signedParser = True  <$ reserved "signed" <|>
+>                False <$ reserved "unsigned"
+                                  
 Lexer definition
   
 > constrLexer :: TokenParser st
@@ -91,12 +113,21 @@ Lexer definition
 
 > comma :: Parser String
 > comma = Tk.comma constrLexer
+
+> starParser :: Parser ()
+> starParser = () <$ Tk.symbol constrLexer "*"
+
+> colon :: Parser ()
+> colon = () <$ Tk.colon constrLexer
+
+> dot :: Parser ()
+> dot = () <$ Tk.dot constrLexer
   
 Constraint language def
 
 > constrDef :: LanguageDef st
 > constrDef = emptyDef {
->               Tk.reservedOpNames = [".", ":", "=", "->"] 
+>               Tk.reservedOpNames = [":", "=", "->"] 
 >             , Tk.reservedNames = ["exists", "def", "isdef", "True"
 >                                  , "short", "long", "int", "float"
 >                                  , "double", "_Bool", "_Complex"
