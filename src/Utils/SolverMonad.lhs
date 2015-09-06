@@ -23,7 +23,10 @@ Monad definition
 >                counter   :: Int
 >             ,  ctx       :: Ctx
 >             ,  fieldMap  :: FieldMap              
->             }      
+>             } deriving Show
+
+> emptyConf :: Conf
+> emptyConf = Conf 0 Map.empty Map.empty             
 
 > type SolverM a = ExceptT String (StateT Conf Identity) a
 

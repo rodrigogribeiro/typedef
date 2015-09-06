@@ -51,12 +51,12 @@ Substitution definition
 >     apply s v@(Var n) = case Map.lookup n s of
 >                           Nothing -> v
 >                           Just ty -> ty
->     fv = everything Set.union (mkQ Set.empty (\(Var n) -> Set.singleton n))                      
+>     fv = everything Set.union (mkQ Set.empty (\t -> if isVar t then Set.singleton (unVar t) else Set.empty))                      
 
 
 > instance Substitutable Constr where
->     apply s = everywhere (mkT (\v@(Var n) -> maybe v id (Map.lookup n s)))
->     fv = everything Set.union (mkQ Set.empty (\(Var n) -> Set.singleton n))
+>     apply s = everywhere (mkT (\v -> if isVar v then maybe v id (Map.lookup (unVar v) s) else v))
+>     fv = everything Set.union (mkQ Set.empty (\t -> if isVar t then Set.singleton (unVar t) else Set.empty))
 
 
 Occurs check test
@@ -68,3 +68,8 @@ Composition
 
 > (@@) :: Subst -> Subst -> Subst
 > s1 @@ s2 = (Map.map (\t -> apply s1 t) s2) `Map.union` s1        
+
+> isVar (Var _) = True
+> isVar _ = False
+
+> unVar (Var n) = n

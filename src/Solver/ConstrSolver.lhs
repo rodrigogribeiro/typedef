@@ -51,7 +51,7 @@ Stage 1: fresh variable creation and context building
 >                  subs n t (Var n')
 >                       | n == n' = t
 >                       | otherwise = Var n'
->                  subst n t t' = t'     
+>                  subs n t t' = t'     
   
 
 > solverStage1 :: Constr -> SolverM Constr
@@ -92,8 +92,11 @@ Stage 2: expand definitions
 Stage 3: unification of equality constraints  
                              
 > collect :: Constr -> [Constr]
-> collect = everything (++) (mkQ [] (\c@(_ :=: _) -> [c]))
+> collect = everything (++) (mkQ [] (\c -> if isEq c then [c] else []))
 
+> isEq :: Constr -> Bool
+> isEq (_ :=: _) = True
+> isEq _ = False
 
 > class Unifiable a where
 >    unify :: a -> SolverM Subst           
@@ -149,7 +152,8 @@ Stage 3: unification of equality constraints
 > solverStage3 c
 >     = do
 >          s <- unify (collect c)
->          modify (\st -> st{fieldMap = Map.map (apply s) (fieldMap st)})     
+>          modify (\st -> st{fieldMap = Map.map (apply s) (fieldMap st),
+>                            ctx = Map.map (apply s) (ctx st) })     
        
            
 Error messages

@@ -10,4 +10,3 @@ tests = testGroup "Tests" [unitTests]
 unitTests = testGroup "Unit tests"
                [ testCase "Solver test for T0" $ undefined ]
 
-               

@@ -30,11 +30,11 @@ Constraint parser
 > constraintParser = Ex.buildExpressionParser opTable ctrParser
 >                    where
 >                      opTable = [[ Ex.Infix conjParser Ex.AssocRight ]]
->                      conjParser = (:&:) <$ comma          
+>                      conjParser = (:&:) <$ (comma <|> reserved "in")          
 
 > ctrParser :: Parser Constr
 > ctrParser = choice [ existsParser, hasParser , eqParser
->                    , defParser, isDefParser, truthParser ]
+>                    , defParser, isDefParser, truthParser, parens ctrParser ]
 
 > existsParser :: Parser Constr
 > existsParser = reserved "exists" *> (Exists <$> nameParser <*>
@@ -145,7 +145,7 @@ Lexer definition
 > constrLexer = Tk.makeTokenParser constrDef
 
 > nameParser :: Parser Name
-> nameParser = Name <$> Tk.identifier constrLexer             
+> nameParser = Name <$> (Tk.identifier constrLexer <|> Tk.operator constrLexer)
 
 > reserved :: String -> Parser ()
 > reserved = Tk.reserved constrLexer           
@@ -159,8 +159,8 @@ Lexer definition
 > parens :: Parser a -> Parser a
 > parens = Tk.parens constrLexer          
 
-> comma :: Parser String
-> comma = Tk.comma constrLexer
+> comma :: Parser ()
+> comma = () <$ Tk.comma constrLexer
 
 > starParser :: Parser ()
 > starParser = () <$ Tk.symbol constrLexer "*"
