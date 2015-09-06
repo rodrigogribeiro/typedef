@@ -127,10 +127,11 @@ Stage 3: unification of equality constraints
 
 > instance Unifiable (CType, CType) where
 >     unify (Pointer t, Pointer t') = unify (t, t') 
->     unify (Struct fs, Struct fs')
->         = do
->             ss <- mapM unify (zip fs fs')
->             return (foldr (@@) nullSubst ss)
+>     unify (Struct fs n, Struct fs' n')
+>         | n == n' = do
+>                       ss <- mapM unify (zip fs fs')
+>                       return (foldr (@@) nullSubst ss)
+>         | otherwise = unificationError n n'
 >     unify (t@(Function n r ts), t'@(Function n' r' ts'))
 >                 | n == n' = do
 >                              s <- unify (r, r')

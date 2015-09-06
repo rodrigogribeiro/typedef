@@ -34,7 +34,8 @@ Data type for representing C types
 >            | DoubleComplex
 >            | LongDoubleComplex
 >            | Void
->            | Struct   { fields    :: Fields }
+>            | Struct   { fields    :: Fields
+>                       , sname     :: Name   }
 >            | Pointer  { unPointer :: Type   }
 >            | Function { name      :: Name
 >                       , retTy     :: Type               
@@ -69,8 +70,8 @@ Instances for pretty printting types
 >     pprint DoubleComplex = text "double _Complex"                      
 >     pprint LongDoubleComplex = text "long double _Complex"
 >     pprint Void = text "void"
->     pprint (Struct fs) = text "struct" <+>
->                          braces (hcat $ punctuate semi (map pprint fs))
+>     pprint (Struct fs n ) = text "struct" <+>
+>                             braces (hcat $ punctuate semi (map pprint fs)) <+> pprint n
 >     pprint (Pointer p) = pprint p <+> star
 >     pprint (Function n r ps) = pprint n <+>
 >                                pprint r <+>

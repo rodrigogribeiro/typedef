@@ -33,7 +33,7 @@ Substitution definition
 >     fv = foldr (Set.union . fv) Set.empty
 
 > instance Substitutable CType where
->     apply s (Struct fs) = Struct (apply s fs)
+>     apply s (Struct fs n) = Struct (apply s fs) n
 >     apply s (Pointer t) = Pointer (apply s t)
 >     apply s (Function n r ts) = Function n (apply s r) (apply s ts)
 >     apply s t = t

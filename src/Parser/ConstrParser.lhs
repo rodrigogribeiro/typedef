@@ -30,26 +30,30 @@ Constraint parser
 > constraintParser = Ex.buildExpressionParser opTable ctrParser
 >                    where
 >                      opTable = [[ Ex.Infix conjParser Ex.AssocRight ]]
->                      conjParser = (:&:) <$ comma 
+>                      conjParser = (:&:) <$ comma          
 
 > ctrParser :: Parser Constr
-> ctrParser = choice [ existsParser, eqParser, hasParser
+> ctrParser = choice [ existsParser, hasParser , eqParser
 >                    , defParser, isDefParser, truthParser ]
 
 > existsParser :: Parser Constr
 > existsParser = reserved "exists" *> (Exists <$> nameParser <*>
 >                                                 (dot *> constraintParser))
 
-> eqParser :: Parser Constr
-> eqParser = (:=:) <$> typeParser <*> (reservedOp "=" *> typeParser)
-
 > hasParser :: Parser Constr
 > hasParser = reserved "has" *> parens (Has <$> nameParser <*>
 >                                               (comma *> fieldParser))
 
+> eqParser :: Parser Constr
+> eqParser = (:=:) <$> typeParser <*> (reservedOp "=" *> typeParser)
+                                                
 > defParser :: Parser Constr
-> defParser = reserved "def" *> (Def <$> nameParser <*> (colon *> typeParser))
-
+> defParser = reserved "def" *> (f <$> nameParser <*> (reservedOp ":" *> ((Left <$> typeParser) <|>
+>                                                                        (Right <$> functionParser))))
+>              where
+>                f n (Left t) = Def n t
+>                f n (Right ts) = Def n (Simple $ Function n (last ts) (init ts))               
+  
 > isDefParser :: Parser Constr
 > isDefParser = reserved "isdef" *> (IsDefined <$> nameParser)
 
@@ -59,7 +63,12 @@ Constraint parser
 Type parser
 
 > typeParser :: Parser Type
-> typeParser = (Simple <$> cTypeParser) <|> typeDefParser
+> typeParser = choice [ Simple <$> cTypeParser
+>                     , typeDefParser
+>                     , typeVarParser ]
+
+> typeVarParser :: Parser Type
+> typeVarParser = Var <$> nameParser                 
 
 type def parser
 
@@ -72,10 +81,10 @@ CType parser
 > cTypeParser = choice [ boolParser, charParser, shortIntParser, intParser
 >                      , longIntParser, longLongIntParser, floatParser
 >                      , doubleParser, longDoubleParser, voidParser
->                      , structParser,  functionParser, pointerParser ]             
+>                      , structParser, pointerParser ]               
 
 > fieldParser :: Parser Field
-> fieldParser = Field <$> nameParser <*> typeParser               
+> fieldParser = flip Field <$> typeParser <*> nameParser
 
 > boolParser :: Parser CType
 > boolParser = CBool <$ reserved "_Bool"
@@ -116,23 +125,19 @@ CType parser
 
 > structParser :: Parser CType
 > structParser = Struct <$> (reserved "struct" *>
->                      braces  (fieldParser `sepBy` comma))
+>                      braces  (fieldParser `sepBy` comma)) <*> nameParser
 
-> arrowTypeParser :: Parser [Type]
-> arrowTypeParser = undefined
-
-> functionParser :: Parser CType
-> functionParser = f <$> nameParser <*> (colon *> arrowTypeParser)
->                  where
->                     f n [] = error "Impossible! Function Parser!"
->                     f n (t : ts) = Function n t ts 
+> functionParser :: Parser [Type]
+> functionParser = parens (typeParser `sepBy1` comma)
                        
 > pointerParser :: Parser CType
-> pointerParser = Pointer <$> typeParser <* starParser
-                                                                                                              
+> pointerParser = flip f <$> (many1 starParser) <*> typeParser
+>                 where
+>                    f t [ _ ] = Pointer t
+>                    f t (_ : xs) = Pointer (Simple (f t xs))
+                        
 > signedParser :: Parser Bool
-> signedParser = True  <$ reserved "signed" <|>
->                False <$ reserved "unsigned"
+> signedParser = option True (False  <$ reserved "unsigned")
                                   
 Lexer definition
   
@@ -175,7 +180,7 @@ Constraint language def
 >                                  , "short", "long", "int", "float"
 >                                  , "double", "_Bool", "_Complex"
 >                                  , "char", "signed", "unsigned"
->                                  , "void", "struct", "has"]
+>                                  , "void", "struct", "has", "eq"]
 >             }             
 
               
