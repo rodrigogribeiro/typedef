@@ -22,11 +22,12 @@ Monad definition
 > data Conf = Conf {
 >                counter   :: Int
 >             ,  ctx       :: Ctx
+>             ,  defs      :: Ctx                
 >             ,  fieldMap  :: FieldMap              
 >             } deriving Show
 
 > emptyConf :: Conf
-> emptyConf = Conf 0 Map.empty Map.empty             
+> emptyConf = Conf 0 Map.empty Map.empty Map.empty             
 
 > type SolverM a = ExceptT String (StateT Conf Identity) a
 
@@ -51,13 +52,12 @@ Inserting a new definition
 
 Looking up a definition and generating a fresh variable         
 
-> lookupDef :: Name -> SolverM Type
-> lookupDef n
+> lookupTypeDef :: Name -> SolverM ()
+> lookupTypeDef n
 >     = do
->         m <- gets (Map.lookup n . ctx)
->         maybe (fresh >>= \t -> insertDef n t >> return t)
->               return 
->               m
+>         s <- get
+>         t <- fresh     
+>         put(s{defs = Map.insert n t (defs s) })     
 
 Inserting a new field
 

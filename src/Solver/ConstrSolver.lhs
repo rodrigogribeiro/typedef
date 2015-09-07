@@ -30,11 +30,15 @@ Basically the algorithm performs 3 stages:
 
 Solver top-level interface    
 
-> solver :: Constr -> Conf -> Either String Conf       
-> solver c conf = case runSolverM conf (solve c) of
->                    (e,c) -> either Left (const (Right c)) e
+> solver :: Constr -> Conf -> Either String [Type]       
+> solver c conf = build $ fst $ runSolverM conf (solve c)
+>                 where
+>                   build = either Left (Right . f)
+>                   f = Map.foldrWithKey (\k t ac -> TypeDef t k : ac) []         
+
+>
        
-> solve :: Constr -> SolverM ()
+> solve :: Constr -> SolverM Ctx
 > solve c
 >     = do
 >         c1 <- solverStage1 c
@@ -69,10 +73,7 @@ Stage 1: fresh variable creation and context building
 > solverStage1 (Def n t)
 >              = insertDef n t >> return Truth
 > solverStage1 (IsDefined n)
->              = do
->                 t <- lookupDef n
->                 insertDef n t
->                 return Truth               
+>              = lookupTypeDef n >> return Truth               
 > solverStage1 c = return c               
 
 Stage 2: expand definitions
@@ -148,12 +149,14 @@ Stage 3: unification of equality constraints
 > convertible :: CType -> CType -> Bool
 > convertible t t' = t == t'
                  
-> solverStage3 :: Constr -> SolverM ()
+> solverStage3 :: Constr -> SolverM Ctx
 > solverStage3 c
 >     = do
 >          s <- unify (collect c)
 >          modify (\st -> st{fieldMap = Map.map (apply s) (fieldMap st),
->                            ctx = Map.map (apply s) (ctx st) })     
+>                            ctx = Map.map (apply s) (ctx st) ,
+>                            defs = Map.map (apply s) (defs st) })
+>          gets defs                  
        
            
 Error messages
