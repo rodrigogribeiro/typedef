@@ -5,7 +5,7 @@ Definition of types
         
 > module Syntax.Type where
 
-> import Data.Generics
+> import Data.Generics hiding (empty)
   
 > import Utils.Pretty
 
@@ -21,12 +21,15 @@ Data type for representing C types
      
 > type Fields = [Field]     
 
+> data Signed = Signed | Unsigned | None
+>               deriving (Eq, Ord, Show , Data, Typeable)
+  
 > data CType = CBool
->            | Char         Bool  -- True ==> signed char / False unsigned char
->            | ShortInt     Bool
->            | Int          Bool
->            | LongInt      Bool
->            | LongLongInt  Bool
+>            | Char         Signed
+>            | ShortInt     Signed
+>            | Int          Signed
+>            | LongInt      Signed
+>            | LongLongInt  Signed
 >            | Float
 >            | Double
 >            | LongDouble
@@ -56,13 +59,18 @@ Instances for pretty printting types
 > instance PPrint Field where
 >     pprint (Field n t) = pprint t <+> pprint n
 
+> instance PPrint Signed where
+>     pprint Signed = text "signed"
+>     pprint Unsigned = text "unsigned"
+>     pprint None = empty                  
+
 > instance PPrint CType where
 >     pprint CBool = text "_Bool"
->     pprint (Char u) = signed u "char"
->     pprint (ShortInt u) = signed u "short int"
->     pprint (Int u) = signed u "int"
->     pprint (LongInt u) = signed u "long int"
->     pprint (LongLongInt u) = signed u "long long int"
+>     pprint (Char u) = pprint u <+> text "char"
+>     pprint (ShortInt u) = pprint u <+> text "short int"
+>     pprint (Int u) = pprint u <+> text "int"
+>     pprint (LongInt u) = pprint u <+> text "long int"
+>     pprint (LongLongInt u) = pprint u <+> text "long long int"
 >     pprint Float = text "float"
 >     pprint Double = text "double"
 >     pprint LongDouble = text "long double"
@@ -85,10 +93,6 @@ Instances for pretty printting types
 >     pprint (TypeDef t n) = text "typedef" <+> pprint t <+> pprint n
                                                    
 Some auxiliar code
-
-> signed :: Bool -> String -> Doc
-> signed True s  = hsep $ map text ["signed", s]
-> signed False s = hsep $ map text ["unsigned", s]
 
 > star :: Doc
 > star = char '*'

@@ -30,11 +30,12 @@ Constraint parser
 > constraintParser = Ex.buildExpressionParser opTable ctrParser
 >                    where
 >                      opTable = [[ Ex.Infix conjParser Ex.AssocRight ]]
->                      conjParser = (:&:) <$ (comma <|> reserved "in")          
+>                      conjParser = (:&:) <$ comma          
 
 > ctrParser :: Parser Constr
 > ctrParser = choice [ existsParser, hasParser , eqParser
->                    , defParser, isDefParser, truthParser, parens ctrParser ]
+>                    , defParser, isDefParser, truthParser
+>                    , parens ctrParser ]
 
 > existsParser :: Parser Constr
 > existsParser = reserved "exists" *> (Exists <$> nameParser <*>
@@ -45,14 +46,21 @@ Constraint parser
 >                                               (comma *> fieldParser))
 
 > eqParser :: Parser Constr
-> eqParser = (:=:) <$> typeParser <*> (reservedOp "=" *> typeParser)
+> eqParser = build <$> typeParser <*> (reservedOp "=" *> (normal <|> funP))
+>            where
+>               normal = Left <$> typeParser
+>               funP = Right <$> functionParser
+>               build t (Left t')  = t :=: t'       
+>               build t@(Var n) (Right ts) = t :=: (Simple $ Function n (last ts) (init ts))
+                       
                                                 
 > defParser :: Parser Constr
 > defParser = reserved "def" *> (f <$> nameParser <*> (reservedOp ":" *> ((Left <$> typeParser) <|>
->                                                                        (Right <$> functionParser))))
+>                                                                        (Right <$> functionParser)))
+>                                                 <*> (reserved "in" *> constraintParser))
 >              where
->                f n (Left t) = Def n t
->                f n (Right ts) = Def n (Simple $ Function n (last ts) (init ts))               
+>                f n (Left t) c = Def n t c
+>                f n (Right ts) c = Def n (Simple $ Function n (last ts) (init ts)) c               
   
 > isDefParser :: Parser Constr
 > isDefParser = reserved "isdef" *> (IsDefined <$> nameParser)
@@ -136,8 +144,9 @@ CType parser
 >                    f t [ _ ] = Pointer t
 >                    f t (_ : xs) = Pointer (Simple (f t xs))
                         
-> signedParser :: Parser Bool
-> signedParser = option True (False  <$ reserved "unsigned")
+> signedParser :: Parser Signed
+> signedParser = option None ((Unsigned  <$ reserved "unsigned") <|>
+>                             (Signed <$ reserved "signed")) 
                                   
 Lexer definition
   

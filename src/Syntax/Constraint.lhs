@@ -14,13 +14,13 @@ Constraints syntax
   
 Definition of constraints
 
-> data Constr = Exists Name Constr  -- fresh variable introduction
->             | Constr :&: Constr   -- conjunction
->             | Type :=: Type       -- equality
->             | Has Name Field      -- field constraint
->             | Def Name Type       -- definition and its type
->             | IsDefined Name      -- use of a possible type definition  
->             | Truth               -- empty constraint  
+> data Constr = Exists Name Constr   -- fresh variable introduction
+>             | Constr :&: Constr    -- conjunction
+>             | Type :=: Type        -- equality
+>             | Has Name Field       -- field constraint
+>             | Def Name Type Constr -- definition and its type
+>             | IsDefined Name       -- use of a possible type definition  
+>             | Truth                -- empty constraint  
 >             deriving (Eq, Ord, Show, Data, Typeable)
 
 
@@ -35,8 +35,9 @@ Definition of a pretty printer
 >     pprint (Has n f)  = text "has" <> parens (pprint n <+>
 >                                               comma    <>
 >                                               pprint f)
->     pprint (Def n t) = text "def" <+> pprint n
->                        <+> equals <+> pprint t
+>     pprint (Def n t c) = text "def"    <+> pprint n
+>                          <+> equals    <+> pprint t
+>                          <+> text "in" <+> pprint c 
 >     pprint (IsDefined n) = text "isdef" <+> pprint n                       
 >     pprint Truth = text "True"                       
                          

@@ -7,7 +7,7 @@ Basically the algorithm performs 3 stages:
 
 1 - Create all fresh variables for existencial quantifiers, collects all definitions and field constraints
 2 - Expand all definitions types  
-3 - Solve all equality constraints and updates types in field constraints
+3 - Solve all equality constraints and updatesfield constraints by applying the resulting unifier
 
 
 > module Solver.ConstrSolver(solver) where
@@ -34,9 +34,8 @@ Solver top-level interface
 > solver c conf = build $ fst $ runSolverM conf (solve c)
 >                 where
 >                   build = either Left (Right . f)
->                   f = Map.foldrWithKey (\k t ac -> TypeDef t k : ac) []         
-
->
+>                   f = Map.foldrWithKey step []         
+>                   step k t ac = TypeDef t k : ac
        
 > solve :: Constr -> SolverM Ctx
 > solve c
@@ -70,8 +69,8 @@ Stage 1: fresh variable creation and context building
 >                return (c1 :&: c1')
 > solverStage1 (Has n f)
 >              = insertField n f >> return Truth
-> solverStage1 (Def n t)
->              = insertDef n t >> return Truth
+> solverStage1 (Def n t c)
+>              = insertDef n t >> solverStage1 c
 > solverStage1 (IsDefined n)
 >              = lookupTypeDef n >> return Truth               
 > solverStage1 c = return c               
