@@ -147,8 +147,11 @@ Stage 3: unification of equality constraints
 >         | otherwise = unificationError t t'
 
 > convertible :: CType -> CType -> Bool
-> convertible t t' = t == t'
-                 
+> convertible t t' = or [t == t', upConversion t t']
+
+> upConversion :: CType -> CType -> Bool
+> upConversion t t' = False  
+  
 > solverStage3 :: Constr -> SolverM Ctx
 > solverStage3 c
 >     = do
