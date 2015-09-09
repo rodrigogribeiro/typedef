@@ -1,7 +1,7 @@
 A parsec based parser for constraints
 ========================
 
-> module Parser.ConstrParser where
+> module Parser.ConstrParser (parser) where
 
 > import Data.Functor
 > import Data.Functor.Identity

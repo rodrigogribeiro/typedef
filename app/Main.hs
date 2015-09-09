@@ -1,27 +1,52 @@
+
 module Main where    
 
-import Control.Monad (unless)   
-import System.Environment (getArgs)
-import System.Exit (exitSuccess)
-    
-import Parser.ConstrParser    
-import Solver.ConstrSolver
-import Utils.SolverMonad
-import Utils.Pretty
- 
+import Options.Applicative
+import System.FilePath    
+import Solver (solver)
+
+-- command line parser arguments    
+
+data Config = Config {
+                inputFile  :: FilePath
+              , outputFile :: Maybe FilePath                
+              } deriving Show
+
+config :: Parser Config
+config = Config <$> strOption
+                      (  long "input-file"
+                      <> short 'i'        
+                      <> metavar "INPUT"
+                      <> help "Constraint input file")
+                <*> optional
+                      (strOption
+                         (  long "output-file"
+                         <> short 'o'        
+                         <> metavar "OUTPUT"
+                         <> help "Output file with infered typedef's"))
+
+opts :: ParserInfo Config
+opts = info (config <**> helper)
+            ( fullDesc
+            <> progDesc "Infer missing typedef's for a constraint in INPUT file"
+            <> header "Constraint solver for typedef inference" )                      
+                    
+            
+-- writing results of the solver
+
+makeFileName :: FilePath -> FilePath
+makeFileName p = p -<.> "tdef" 
+
+writeResults :: Config -> [String] -> IO ()                
+writeResults (Config inp Nothing) ts = writeFile (makeFileName inp)
+                                                 (concat ts)
+writeResults (Config _ (Just o)) ts = writeFile o (concat ts)                      
+
+-- main function
 
 main :: IO ()
 main = do
-        args <- getArgs
-        unless (single args) exitSuccess
-        f <- readFile (head args)
-        either error 
-               (\c -> either putStrLn
-                             (mapM_ (putStrLn . show . pprint))
-                             (solver c emptyConf))
-               (parser f)
-
-
-single :: [a] -> Bool
-single [ _ ]  = True
-single _ = False
+         cfg <- execParser opts
+         c <- readFile (inputFile cfg)        
+         let ts = solver c
+         either putStrLn (writeResults cfg) ts

@@ -15,13 +15,14 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Syntax.Type
-                     , Syntax.Constraint
-                     , Utils.Pretty
-                     , Utils.SolverMonad
-                     , Solver.ConstrSolver
-                     , Solver.Subst
-                     , Parser.ConstrParser
+  exposed-modules:     Solver
+                       Parser.ConstrParser
+                       Solver.ConstrSolver
+                       Solver.Subst
+                       Syntax.Constraint
+                       Syntax.Type
+                       Utils.SolverMonad
+                       Utils.Pretty
   build-depends:       base >= 4.7 && < 5
                        , parsec
                        , pretty
@@ -35,6 +36,8 @@ executable typedefsolver-exe
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
+                     , optparse-applicative
+                     , filepath                    
                      , typedefsolver
   default-language:    Haskell2010
 
