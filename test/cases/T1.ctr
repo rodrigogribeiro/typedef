@@ -1,0 +1,1 @@
+isdef T , def foo : (T,int) in def i : T in exists a. exists a1. exists a2. exists a3. i = a3, a3 = * a1, int = a2 , + = (a1,a2,a), int = a 

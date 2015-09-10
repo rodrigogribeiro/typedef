@@ -48,5 +48,5 @@ main :: IO ()
 main = do
          cfg <- execParser opts
          c <- readFile (inputFile cfg)        
-         let ts = solver c
+         ts <- solver c
          either putStrLn (writeResults cfg) ts

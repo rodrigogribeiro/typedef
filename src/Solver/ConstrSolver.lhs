@@ -15,6 +15,7 @@ Basically the algorithm performs 3 stages:
 > import Control.Monad(zipWithM)  
 > import Control.Monad.Except(throwError)  
 > import Control.Monad.State(gets, modify)
+> import Control.Monad.Trans
   
 > import Data.Generics (everywhere, everything, mkT, mkQ)
 > import Data.Map(Map)
@@ -30,8 +31,10 @@ Basically the algorithm performs 3 stages:
 
 Solver top-level interface    
 
-> solver :: Constr -> Conf -> Either String [Type]       
-> solver c conf = build $ fst $ runSolverM conf (solve c)
+> solver :: Constr -> Conf -> IO (Either String [Type])
+> solver c conf = do
+>                  r <- runSolverM conf (solve c)
+>                  return $ build (fst r)
 >                 where
 >                   build = either Left (Right . f)
 >                   f = Map.foldrWithKey step []         
@@ -41,7 +44,8 @@ Solver top-level interface
 > solve c
 >     = do
 >         c1 <- solverStage1 c
->         c2 <- solverStage2 c1
+>         c2 <- solverStage2 c1      
+>         liftIO (print $ map pprint $ collect c2)
 >         solverStage3 c2
 
        
@@ -146,15 +150,18 @@ Stage 3: unification of equality constraints
 >         | otherwise = unificationError t t'
 
 > convertible :: CType -> CType -> Bool
-> convertible t t' = or [t == t', upConversion t t']
+> convertible t t' = or [t == t', intConversion t t']
 
-> upConversion :: CType -> CType -> Bool
-> upConversion t t' = False  
+> intConversion :: CType -> CType -> Bool
+> intConversion t t' = integerPromotion t == integerPromotion t'  
   
 > solverStage3 :: Constr -> SolverM Ctx
 > solverStage3 c
 >     = do
 >          s <- unify (collect c)
+>          m <- gets defs
+>          liftIO (print m)
+>          liftIO (print s)       
 >          modify (\st -> st{fieldMap = Map.map (apply s) (fieldMap st),
 >                            ctx = Map.map (apply s) (ctx st) ,
 >                            defs = Map.map (apply s) (defs st) })

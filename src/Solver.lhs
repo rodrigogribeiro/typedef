@@ -3,18 +3,46 @@ Solver top level interface module
 
 > module Solver where
   
+> import Data.Map(Map)
+> import qualified Data.Map as Map
+  
 > import Parser.ConstrParser
 > import qualified Solver.ConstrSolver as S
+> import Syntax.Type    
 > import Utils.Pretty    
 > import Utils.SolverMonad
 
-Solver top level function  
+Solver top level function       
      
-> solver :: String -> Either String [String]
+> solver :: String -> IO (Either String [String])
 > solver s = do
->             r <- parser s
->             r' <- S.solver r initialConf      
->             return (map ((flip (++) ";\n") . show . pprint) r')      
+>             let r = parser s
+>             case r of
+>               Left err -> return (Left err)
+>               Right t  ->
+>                   do
+>                     r' <- S.solver t initialConf
+>                     case r' of
+>                       Left err' -> return (Left err')
+>                       Right t'  -> return $ Right $ (map ((flip (++) ";\n") . show . pprint) t')
+
 
 > initialConf :: Conf
-> initialConf = emptyConf               
+> initialConf = emptyConf {
+>                 ctx = Map.fromList operators
+>               }
+
+Operators                
+                
+> operators :: [(Name, Type)]
+> operators = map (\(n,t) -> (Name n,Simple t)) ops
+>             where
+>               ops = [("*", typ "*"), ("/", typ "/"), ("+",typ "+"),
+>                      ("-", typ "-"), ("<", typ' "<"), ("<=", typ' "<="),
+>                      (">", typ' ">"), (">=", typ' ">="), ("==", typ' "=="),
+>                      ("!=", typ' "!="), ("&", typ "&"), ("|", typ "|"),
+>                      ("^", typ "^")]
+>               typ n = Function (Name n) i [i, i]
+>               typ' n = Function (Name n) b [b, b]
+>               b = Simple CBool
+>               i = Simple (Int None)    

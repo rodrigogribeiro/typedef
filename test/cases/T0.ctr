@@ -1,1 +1,1 @@
-isdef T , def + : (int, int, int) in def foo : (int,T) in def i : int in exists a. exists a1. exists a2. i = a1, int = a2 , + = (a1,a2,a), T = a 
+isdef T , def foo : (int,T) in def i : int in exists a. exists a1. exists a2. i = a1, int = a2 , + = (a1,a2,a), T = a 

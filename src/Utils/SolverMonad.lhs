@@ -29,10 +29,10 @@ Monad definition
 > emptyConf :: Conf
 > emptyConf = Conf 0 Map.empty Map.empty Map.empty             
 
-> type SolverM a = ExceptT String (StateT Conf Identity) a
+> type SolverM a = ExceptT String (StateT Conf IO) a
 
-> runSolverM :: Conf -> SolverM a -> (Either String a, Conf)
-> runSolverM c m = runIdentity (runStateT (runExceptT m) c)              
+> runSolverM :: Conf -> SolverM a -> IO (Either String a, Conf)
+> runSolverM c m =  runStateT (runExceptT m) c              
 
 Generating fresh variables
 
@@ -55,8 +55,8 @@ Looking up a definition and generating a fresh variable
 > lookupTypeDef :: Name -> SolverM ()
 > lookupTypeDef n
 >     = do
->         s <- get
->         t <- fresh     
+>         t <- fresh
+>         s <- get     
 >         put(s{defs = Map.insert n t (defs s) })     
 
 Inserting a new field

@@ -91,7 +91,30 @@ Instances for pretty printting types
 >     pprint (Simple t) = pprint t
 >     pprint (Var n) = pprint n
 >     pprint (TypeDef t n) = text "typedef" <+> pprint t <+> pprint n
-                                                   
+
+Rank for conversion between types
+
+> rank :: CType -> Int
+> rank CBool = 1
+> rank (Char _) = 2
+> rank (ShortInt _) = 3
+> rank (Int _) = 4
+> rank (LongInt _) = 5
+> rank (LongLongInt _) = 6
+> rank Float = 7
+> rank Double = 8
+> rank LongDouble = 9
+> rank FloatComplex = 8
+> rank DoubleComplex = 9
+> rank t = 100                     
+
+Integer promotion
+
+> integerPromotion :: CType -> CType
+> integerPromotion c
+>      | rank c <= rank (Int Unsigned) = Int Unsigned
+>      | otherwise = c
+                                   
 Some auxiliar code
 
 > star :: Doc
