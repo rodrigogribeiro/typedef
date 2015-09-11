@@ -18,6 +18,7 @@ Basically the algorithm performs 3 stages:
 > import Control.Monad.Trans
   
 > import Data.Generics (everywhere, everything, mkT, mkQ)
+> import Data.List (union)
 > import Data.Map(Map)
 > import qualified Data.Map as Map
 > import Data.Set(Set)
@@ -45,7 +46,6 @@ Solver top-level interface
 >     = do
 >         c1 <- solverStage1 c
 >         c2 <- solverStage2 c1      
->         liftIO (print $ map pprint $ collect c2)
 >         solverStage3 c2
 
        
@@ -81,17 +81,19 @@ Stage 1: fresh variable creation and context building
 
 Stage 2: expand definitions
 
-> expand :: Ctx -> Constr -> Constr
-> expand ctx c = foldr ($) c (zipWith subst vs ts)
->               where
->                  ss = Set.fromList $ Map.keys ctx
->                  vs = Set.toList $ Set.intersection ss (fv c)
->                  ts = map ((Map.!) ctx) vs
+> expand :: Ctx -> Ctx -> Constr -> Constr
+> expand ctx defs c = foldr ($) c (zipWith subst vs ts)
+>                     where
+>                       ctx' = ctx `Map.union` defs
+>                       ss = (Set.fromList $ Map.keys ctx') 
+>                       vs = Set.toList $ Set.intersection ss (fv c)
+>                       ts = (map ((Map.!) ctx') vs) 
 
 > solverStage2 :: Constr -> SolverM Constr
 > solverStage2 c = do
 >                    cx <- gets ctx
->                    return (everywhere (mkT (expand cx)) c)
+>                    ds <- gets defs      
+>                    return (everywhere (mkT (expand cx ds)) c)
 
 Stage 3: unification of equality constraints  
                              
@@ -160,8 +162,6 @@ Stage 3: unification of equality constraints
 >     = do
 >          s <- unify (collect c)
 >          m <- gets defs
->          liftIO (print m)
->          liftIO (print s)       
 >          modify (\st -> st{fieldMap = Map.map (apply s) (fieldMap st),
 >                            ctx = Map.map (apply s) (ctx st) ,
 >                            defs = Map.map (apply s) (defs st) })

@@ -1,0 +1,1 @@
+exists a. (isdef T , def x : T in def c : char , exists a1. (a1 = char), c = a1, ), a = int
