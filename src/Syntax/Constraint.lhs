@@ -5,7 +5,8 @@ Constraints syntax
 
 > module Syntax.Constraint where
 
-> import Data.Monoid  
+> import Data.Monoid (Monoid)
+> import qualified Data.Monoid as M
 > import Data.Generics (Data, Typeable, everything, mkQ)
 > import Data.Set(Set)
 > import qualified Data.Set as Set
@@ -26,7 +27,7 @@ Definition of constraints
 
 Constraints form a monoid
 
-> instance Monoid Constraint where
+> instance Monoid Constr where
 >     mempty = Truth
 >     mappend = (:&:)         
 

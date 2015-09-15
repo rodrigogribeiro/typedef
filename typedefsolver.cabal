@@ -22,7 +22,7 @@ library
                        Syntax.Constraint
                        Syntax.Type
                        Syntax.CoreC
-                       Contr.ConstrGen
+                       Gen.ConstrGen
                        Utils.SolverMonad
                        Utils.Pretty
   build-depends:       base >= 4.7 && < 5
