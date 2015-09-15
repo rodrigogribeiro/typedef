@@ -1,1 +1,7 @@
-exists a. (isdef T , def x : T in def c : char , exists a1. (a1 = char), c = a1, ), a = int
+isdef T,
+      def x : T in
+      	  exists a.
+	     def c : char in
+	        a = char ,
+		  exists a1 . exists a2. exists a3. x = a1 , c = a2 , c = a3 , a2 = a3, has(a1, a2 c),
+		  	 exists a4. exists a5. exists a6. x = a6 , i = a5, a5 = int , has(a6, a5 i)

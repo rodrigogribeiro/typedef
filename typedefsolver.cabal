@@ -21,6 +21,8 @@ library
                        Solver.Subst
                        Syntax.Constraint
                        Syntax.Type
+                       Syntax.CoreC
+                       Contr.ConstrGen
                        Utils.SolverMonad
                        Utils.Pretty
   build-depends:       base >= 4.7 && < 5

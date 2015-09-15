@@ -45,7 +45,7 @@ Solver top-level interface
 > solve c
 >     = do
 >         c1 <- solverStage1 c
->         c2 <- solverStage2 c1      
+>         c2 <- solverStage2 c1
 >         solverStage3 c2
 
        
@@ -65,7 +65,7 @@ Stage 1: fresh variable creation and context building
 > solverStage1 (Exists n c)
 >              = do
 >                  t <- fresh
->                  return (subst n t c)
+>                  solverStage1 (subst n t c)
 > solverStage1 (c :&: c')
 >              = do
 >                c1 <- solverStage1 c
@@ -87,13 +87,13 @@ Stage 2: expand definitions
 >                       ctx' = ctx `Map.union` defs
 >                       ss = (Set.fromList $ Map.keys ctx') 
 >                       vs = Set.toList $ Set.intersection ss (fv c)
->                       ts = (map ((Map.!) ctx') vs) 
-
+>                       ts = (map ((Map.!) ctx') vs)
+  
 > solverStage2 :: Constr -> SolverM Constr
 > solverStage2 c = do
 >                    cx <- gets ctx
->                    ds <- gets defs      
->                    return (everywhere (mkT (expand cx ds)) c)
+>                    ds <- gets defs
+>                    return $ everywhere (mkT (expand cx ds)) c
 
 Stage 3: unification of equality constraints  
                              

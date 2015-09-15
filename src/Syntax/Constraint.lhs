@@ -5,6 +5,7 @@ Constraints syntax
 
 > module Syntax.Constraint where
 
+> import Data.Monoid  
 > import Data.Generics (Data, Typeable, everything, mkQ)
 > import Data.Set(Set)
 > import qualified Data.Set as Set
@@ -23,6 +24,11 @@ Definition of constraints
 >             | Truth                -- empty constraint  
 >             deriving (Eq, Ord, Show, Data, Typeable)
 
+Constraints form a monoid
+
+> instance Monoid Constraint where
+>     mempty = Truth
+>     mappend = (:&:)         
 
 Definition of a pretty printer
 
