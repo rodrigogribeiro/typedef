@@ -40,6 +40,7 @@ Statement syntax
 >          | VarAssign Name Exp
 >          | PointerAssign Name Exp
 >          | FieldAssign Name Name Exp
+>          | PFieldAssign Name Name Exp  
 >          | ArrayAssign Name Exp Exp
 >          | CCall Name [Exp]
 >          deriving (Eq, Ord, Show, Data, Typeable)
@@ -102,7 +103,8 @@ Pretty printer definition
 > instance PPrint Cmd where
 >     pprint (VarDef t n e) = pprint t <+> pprint n <+> prhs e
 >     pprint (PointerAssign n e) = text "*" <> pprint n <+> prhs e
->     pprint (FieldAssign n n' e) = pprint n <> dot <> pprint n' <+> prhs e                             
+>     pprint (FieldAssign n n' e) = pprint n <> dot <> pprint n' <+> prhs e
+>     pprint (PFieldAssign n n' e) = pprint n <> text "->" <> pprint n' <+>  prhs e                              
 >     pprint (ArrayAssign n e e') = pprint n <> brackets (pprint e) <+> prhs e'
 >     pprint (CCall n es) = pprint n <+> parens (hcat $ punctuate comma es')
 >                           where
