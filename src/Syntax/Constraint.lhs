@@ -29,7 +29,11 @@ Constraints form a monoid
 
 > instance Monoid Constr where
 >     mempty = Truth
->     mappend = (:&:)         
+>     mappend = conj
+>               where
+>                 conj Truth c = c
+>                 conj c Truth = c
+>                 conj c c' = c :&: c'
 
 Definition of a pretty printer
 

@@ -20,7 +20,7 @@ Expression Syntax
 >         | And | BAnd | BOr | BXor 
 >         | OEq | ONeq | Not | Lt | Gt
 >         | Le  | Ge
->         deriving (Eq, Ord, Show, Data, Typeable)
+>         deriving (Eq, Ord, Show, Enum, Data, Typeable)
                  
 > data Exp = EVar Name
 >          | Lit Literal
@@ -41,6 +41,7 @@ Statement syntax
 >          | PointerAssign Name Exp
 >          | FieldAssign Name Name Exp
 >          | ArrayAssign Name Exp Exp
+>          | CCall Name [Exp]
 >          deriving (Eq, Ord, Show, Data, Typeable)
 
 
@@ -102,7 +103,11 @@ Pretty printer definition
 >     pprint (VarDef t n e) = pprint t <+> pprint n <+> prhs e
 >     pprint (PointerAssign n e) = text "*" <> pprint n <+> prhs e
 >     pprint (FieldAssign n n' e) = pprint n <> dot <> pprint n' <+> prhs e                             
->     pprint (ArrayAssign n e e') = pprint n <> brackets (pprint e) <+> prhs e'                              
+>     pprint (ArrayAssign n e e') = pprint n <> brackets (pprint e) <+> prhs e'
+>     pprint (CCall n es) = pprint n <+> parens (hcat $ punctuate comma es')
+>                           where
+>                             es' = map pprint es
+                                   
 
 > instance PPrint Decl where
 >     pprint (DTypeDef t n) = text "typedef" <+> pprint t <+> pprint n <> semi <> text "\n"

@@ -17,6 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Solver
                        Parser.ConstrParser
+                       Parser.CoreCParser
                        Solver.ConstrSolver
                        Solver.Subst
                        Syntax.Constraint
