@@ -1,7 +1,7 @@
 A parser for CoreC language
 ===========================  
 
->module Parser.CoreCParser(parser) where
+>module Parser.CoreCParser where
 
 > import Data.Functor
 > import Data.Functor.Identity
