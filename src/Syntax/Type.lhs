@@ -47,7 +47,6 @@ Data type for representing C types
 
 
 > data Type = Simple CType         -- simple type
->           | TypeDef Type Name    -- type def
 >           | Var Name             -- type variables 
 >           deriving (Eq, Ord, Show, Data, Typeable)
                           
@@ -90,7 +89,6 @@ Instances for pretty printting types
 > instance PPrint Type where
 >     pprint (Simple t) = pprint t
 >     pprint (Var n) = pprint n
->     pprint (TypeDef t n) = text "typedef" <+> pprint t <+> pprint n
 
 Rank for conversion between types
 

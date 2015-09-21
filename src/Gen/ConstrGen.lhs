@@ -1,7 +1,7 @@
 Generating constraints for CoreC programs
 =========================================           
 
-> module Gen.ConstrGen where
+> module Gen.ConstrGen (generator) where
 
 > import Control.Monad  
 > import Control.Monad.Trans
@@ -162,11 +162,15 @@ Constraint generation algorithm
 >                      zipWithM_ generate es vs'
 >                      equality (Var n) (Simple (Function n (Var v) vs')))
 >                   vs
+>     generate (Return e) t
+>          = generate e t
 
 > instance Generate Decl where
->    generate (DTypeDef t n) t' = define n t
->    generate (DFunction t n ps cs) t' = define n (Simple $ Function n t (map fst ps)) >>
->                                        mapM_ (flip generate t) cs
+>    generate (DTypeDef t n) t' = define n t (tell Truth)
+>    generate (DFunction t n ps cs) t' = define n (Simple $ Function n t (map fst ps)) $
+>                                          foldr (uncurry (flip define))
+>                                                (mapM_ (flip generate t) cs)
+>                                                ps
                     
 > instance Generate Program where
 >    generate p t = mapM_ (flip generate t) (unProg p)
@@ -180,11 +184,25 @@ Constraint generation algorithm
 > exists :: Name -> GenM () -> GenM ()
 > exists n g =  censor (Exists n) g
 
-> define :: Name -> Type -> GenM ()
-> define n t = tell (Def n t Truth)          
+> define :: Name -> Type -> GenM () -> GenM ()
+> define n t@(Var n') g = isDef n' >> censor (Def n t) g
+> define n t@(Simple (Struct n fs)) g = mapM_ (uncurry define . break) fs >>
+>                                       censor (Def n t) g
+>                                       where
+>                                          break f = (fieldName f, fieldType f)
+> define n (Simple (Function n t ps)) g = undefined
+> define n (Simple t) g = g    
 
+                            
+> isDef :: Name -> GenM ()
+> isDef n = tell (IsDefined n)
+                            
 Auxiliar functions
 
+> isReturn :: Cmd -> Bool
+> isReturn (Return _) = True
+> isReturn _          = False
+         
 > varOp :: Op -> Type
 > varOp = Var . nameOp
 
@@ -193,5 +211,4 @@ Auxiliar functions
 
 > nameOf :: Type -> Name
 > nameOf (Var v) = v
-> nameOf (TypeDef _ v) = v
 > nameOf _ = error "Impossible!\nConstrGen.nameOf"                       

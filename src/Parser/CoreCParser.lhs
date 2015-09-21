@@ -43,16 +43,17 @@ A type for parsers
 >                 where
 >                    parameters = parens (param `sepBy` comma)
 >                    param = (,) <$> typeParser <*> pName
->                    cmds = braces (pCmd `sepBy` semi)
+>                    cmds = braces (pCmd `endBy` semi)
   
 > pCmd :: Parser Cmd
-> pCmd = choice [ pVarDef
+> pCmd = choice [ pReturn
+>               , pVarDef
 >               , pVarAssign
 >               , pPointerAssign
 >               , pFieldAssign
 >               , pArrayAssign
 >               , pPFieldAssign
->               , pCall]
+>               , pCall ]
 >        where
 >           pVarDef = VarDef <$> typeParser <*> pName <*> pRhs
 >           pVarAssign = VarAssign <$> pName <*> pRhs
@@ -62,6 +63,7 @@ A type for parsers
 >           pPFieldAssign = PFieldAssign <$> pName <*> (reservedOp "->" *> pName) <*> pRhs
 >           pCall = CCall <$> pName <*> parens (pExp `sepBy` comma)               
 >           pRhs = reservedOp "=" *> pExpr
+>           pReturn = Return <$> (reserved "return" *> pExpr)
   
 > pExpr :: Parser Exp
 > pExpr = f <$> pExp <*> option id (choice [ arrayP
@@ -180,5 +182,5 @@ CoreC language def
 >            , Tk.reservedNames = [ "int", "float", "double", "char"
 >                                 , "short", "long", "signed", "unsigned"
 >                                 , "void", "_Bool", "_Complex", "struct"
->                                 , "typedef"]
+>                                 , "typedef", "return"]
 >            }            

@@ -32,8 +32,9 @@ Constraints form a monoid
 >     mappend = conj
 >               where
 >                 conj Truth c = c
->                 conj c Truth = c
+>                 conj c Truth = c                          
 >                 conj c c' = c :&: c'
+
 
 Definition of a pretty printer
 

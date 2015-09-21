@@ -47,7 +47,6 @@ Substitution definition
 
 > instance Substitutable Type where
 >     apply s (Simple t) = Simple (apply s t)
->     apply s (TypeDef t n) = TypeDef (apply s t) n
 >     apply s v@(Var n) = case Map.lookup n s of
 >                           Nothing -> v
 >                           Just ty -> ty

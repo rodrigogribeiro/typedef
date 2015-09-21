@@ -39,7 +39,7 @@ Solver top-level interface
 >                 where
 >                   build = either Left (Right . f)
 >                   f = Map.foldrWithKey step []         
->                   step k t ac = TypeDef t k : ac
+>                   step k t ac = undefined
        
 > solve :: Constr -> SolverM Ctx
 > solve c
@@ -129,10 +129,7 @@ Stage 3: unification of equality constraints
 >     unify (t, Var n)                       
 >         | occurs n t = occursCheckError n t
 >         | otherwise  = return (n +-> t)
->     unify (ty@(TypeDef t n), ty'@(TypeDef t' n'))
->         | n == n' = unify (t, t')
->         | otherwise = unificationError ty ty'
->     unify (t, t') = unificationError t t'
+
 
 > instance Unifiable (CType, CType) where
 >     unify (Pointer t, Pointer t') = unify (t, t') 
@@ -161,12 +158,10 @@ Stage 3: unification of equality constraints
 > solverStage3 c
 >     = do
 >          s <- unify (collect c)
->          m <- gets defs
 >          modify (\st -> st{fieldMap = Map.map (apply s) (fieldMap st),
 >                            ctx = Map.map (apply s) (ctx st) ,
 >                            defs = Map.map (apply s) (defs st) })
->          gets defs                  
-       
+>          gets defs
            
 Error messages
            

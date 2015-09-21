@@ -5,8 +5,9 @@ Solver top level interface module
   
 > import Data.Map(Map)
 > import qualified Data.Map as Map
-  
-> import Parser.ConstrParser
+
+> import Gen.ConstrGen
+> import Parser.CoreCParser    
 > import qualified Solver.ConstrSolver as S
 > import Syntax.Type    
 > import Utils.Pretty    
@@ -16,11 +17,13 @@ Solver top level function
      
 > solver :: String -> IO (Either String [String])
 > solver s = do
->             let r = parser s
+>             let r = parser s        
 >             case r of
 >               Left err -> return (Left err)
->               Right t  ->
+>               Right p  ->
 >                   do
+>                     t <- generator p
+>                     print (pprint t)
 >                     r' <- S.solver t initialConf
 >                     case r' of
 >                       Left err' -> return (Left err')

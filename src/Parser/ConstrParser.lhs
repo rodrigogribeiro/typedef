@@ -72,16 +72,11 @@ Type parser
 
 > typeParser :: Parser Type
 > typeParser = choice [ Simple <$> cTypeParser
->                     , typeDefParser
 >                     , typeVarParser ]
 
 > typeVarParser :: Parser Type
 > typeVarParser = Var <$> nameParser                 
 
-type def parser
-
-> typeDefParser :: Parser Type
-> typeDefParser = reserved "typedef" *> braces (TypeDef <$> typeParser <*> nameParser)
                
 CType parser
   

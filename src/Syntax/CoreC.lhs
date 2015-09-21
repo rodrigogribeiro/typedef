@@ -43,6 +43,7 @@ Statement syntax
 >          | PFieldAssign Name Name Exp  
 >          | ArrayAssign Name Exp Exp
 >          | CCall Name [Exp]
+>          | Return Exp  
 >          deriving (Eq, Ord, Show, Data, Typeable)
 
 
@@ -106,6 +107,7 @@ Pretty printer definition
 >     pprint (FieldAssign n n' e) = pprint n <> dot <> pprint n' <+> prhs e
 >     pprint (PFieldAssign n n' e) = pprint n <> text "->" <> pprint n' <+>  prhs e                              
 >     pprint (ArrayAssign n e e') = pprint n <> brackets (pprint e) <+> prhs e'
+>     pprint (Return e) = text "return" <+> pprint e                               
 >     pprint (CCall n es) = pprint n <+> parens (hcat $ punctuate comma es')
 >                           where
 >                             es' = map pprint es
