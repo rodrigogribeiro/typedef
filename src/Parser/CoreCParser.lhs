@@ -120,7 +120,8 @@ A type for parsers
 >                , Cast <$> (parens typeParser) <*> pExp
 >                , Addr <$> (reservedOp "&" *> pExp)
 >                , PAccess <$> (reservedOp "*" *> pExp)
->                , ECall <$> pName <*> parens (pExp `sepBy` comma)]         
+>                , ECall <$> pName <*> parens (pExp `sepBy` comma)
+>                , Null <$ reserved "NULL"]         
 
 
 > pName :: Parser Name
@@ -182,5 +183,5 @@ CoreC language def
 >            , Tk.reservedNames = [ "int", "float", "double", "char"
 >                                 , "short", "long", "signed", "unsigned"
 >                                 , "void", "_Bool", "_Complex", "struct"
->                                 , "typedef", "return"]
+>                                 , "typedef", "return", "NULL"]
 >            }            

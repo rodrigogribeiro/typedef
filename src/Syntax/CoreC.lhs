@@ -32,6 +32,7 @@ Expression Syntax
 >          | Addr Exp
 >          | PAccess Exp
 >          | PFieldAccess Exp Name
+>          | Null
 >          deriving (Eq, Ord, Show, Data, Typeable)
 
 Statement syntax
@@ -89,6 +90,7 @@ Pretty printer definition
 >    pprint Ge = text ">="            
 
 > instance PPrint Exp where
+>     pprint Null = text "NULL"
 >     pprint (EVar n) = pprint n
 >     pprint (Lit l) = pprint l
 >     pprint (ECall n es) = pprint n <+> parens (hcat $ punctuate comma es')

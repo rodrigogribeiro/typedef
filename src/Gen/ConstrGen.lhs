@@ -8,6 +8,7 @@ Generating constraints for CoreC programs
 > import Control.Monad.Writer
 > import Control.Monad.State    
 
+> import Data.Maybe  
 > import Data.Map (Map)
 > import qualified Data.Map as Map
   
@@ -50,6 +51,7 @@ Constraint generation algorithm
 >     generate (IString _) t = equality t (Simple (Pointer (Simple (Char None))))                        
 
 > instance Generate Exp where
+>     generate Null t = return ()
 >     generate (EVar n) t
 >         = equality (Var n) t
 >     generate (Lit l) t = generate l t
@@ -58,7 +60,7 @@ Constraint generation algorithm
 >             v <- fresh
 >             v' <- fresh
 >             exists v $
->                 exists v $
+>                 exists v' $
 >                    do
 >                      generate e (Var v)
 >                      generate e' (Var v')
@@ -128,7 +130,7 @@ Constraint generation algorithm
 >                       equality t (Var v'')
 
 > instance Generate Cmd where
->     generate (VarDef t n e) _ = generate e t 
+>     generate (VarDef t n e) _ = isDef t >> define n t (generate e t)
 >     generate (PointerAssign n e) _
 >               = do
 >                   v <- fresh
@@ -167,10 +169,13 @@ Constraint generation algorithm
 
 > instance Generate Decl where
 >    generate (DTypeDef t n) t' = define n t (tell Truth)
->    generate (DFunction t n ps cs) t' = define n (Simple $ Function n t (map fst ps)) $
->                                          foldr (uncurry (flip define))
->                                                (mapM_ (flip generate t) cs)
->                                                ps
+>    generate (DFunction t n ps cs) t' = do
+>                        isDef t
+>                        mapM_ (isDef . fst) ps      
+>                        define n (Simple $ Function n t (map fst ps)) $
+>                                 foldr (uncurry (flip define))
+>                                       (mapM_ (flip generate t) cs)
+>                                       ps
                     
 > instance Generate Program where
 >    generate p t = mapM_ (flip generate t) (unProg p)
@@ -179,24 +184,21 @@ Constraint generation algorithm
 > equality t t' = tell (t :=: t')
 
 > has :: Type -> Name -> Type -> GenM ()
-> has t n t' = tell (Has (nameOf t) (Field n t'))
+> has t n t'
+>     | isJust (nameOf t) = tell (Has (fromJust $ nameOf t) (Field n t'))
+>     | otherwise = error "Impossible! ConstrGen.has!"                      
 
 > exists :: Name -> GenM () -> GenM ()
 > exists n g =  censor (Exists n) g
 
 > define :: Name -> Type -> GenM () -> GenM ()
-> define n t@(Var n') g = isDef n' >> censor (Def n t) g
-> define n t@(Simple (Struct n fs)) g = mapM_ (uncurry define . break) fs >>
->                                       censor (Def n t) g
->                                       where
->                                          break f = (fieldName f, fieldType f)
-> define n (Simple (Function n t ps)) g = undefined
-> define n (Simple t) g = g    
+> define n t g = censor (Def n t) g          
 
-                            
-> isDef :: Name -> GenM ()
-> isDef n = tell (IsDefined n)
-                            
+> isDef :: Type -> GenM ()
+> isDef t
+>     | isJust (nameOf t) = tell (IsDefined (fromJust $ nameOf t))
+>     | otherwise = return ()
+                              
 Auxiliar functions
 
 > isReturn :: Cmd -> Bool
@@ -209,6 +211,6 @@ Auxiliar functions
 > nameOp :: Op -> Name
 > nameOp = Name . show . pprint          
 
-> nameOf :: Type -> Name
-> nameOf (Var v) = v
-> nameOf _ = error "Impossible!\nConstrGen.nameOf"                       
+> nameOf :: Type -> Maybe Name
+> nameOf (Var v) = Just v
+> nameOf _ = Nothing

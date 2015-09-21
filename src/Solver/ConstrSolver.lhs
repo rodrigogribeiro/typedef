@@ -26,20 +26,21 @@ Basically the algorithm performs 3 stages:
 
 > import Syntax.Type
 > import Syntax.Constraint
+> import Syntax.CoreC    
 > import Solver.Subst
 > import Utils.Pretty    
 > import Utils.SolverMonad
 
 Solver top-level interface    
 
-> solver :: Constr -> Conf -> IO (Either String [Type])
+> solver :: Constr -> Conf -> IO (Either String [Decl])
 > solver c conf = do
 >                  r <- runSolverM conf (solve c)
 >                  return $ build (fst r)
 >                 where
 >                   build = either Left (Right . f)
 >                   f = Map.foldrWithKey step []         
->                   step k t ac = undefined
+>                   step k t ac = DTypeDef t k : ac
        
 > solve :: Constr -> SolverM Ctx
 > solve c
@@ -157,7 +158,7 @@ Stage 3: unification of equality constraints
 > solverStage3 :: Constr -> SolverM Ctx
 > solverStage3 c
 >     = do
->          s <- unify (collect c)
+>          s <- unify (collect c)     
 >          modify (\st -> st{fieldMap = Map.map (apply s) (fieldMap st),
 >                            ctx = Map.map (apply s) (ctx st) ,
 >                            defs = Map.map (apply s) (defs st) })

@@ -22,12 +22,11 @@ Solver top level function
 >               Left err -> return (Left err)
 >               Right p  ->
 >                   do
->                     t <- generator p
->                     print (pprint t)
+>                     t <- generator p   
 >                     r' <- S.solver t initialConf
 >                     case r' of
 >                       Left err' -> return (Left err')
->                       Right t'  -> return $ Right $ (map ((flip (++) ";\n") . show . pprint) t')
+>                       Right t'  -> return $ Right $ (map ((flip (++) "\n") . show . pprint) t')
 
 
 > initialConf :: Conf
