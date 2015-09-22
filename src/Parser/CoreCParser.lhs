@@ -44,26 +44,33 @@ A type for parsers
 >                    parameters = parens (param `sepBy` comma)
 >                    param = (,) <$> typeParser <*> pName
 >                    cmds = braces (pCmd `endBy` semi)
-  
+
+
 > pCmd :: Parser Cmd
-> pCmd = choice [ pReturn
->               , pVarDef
->               , pVarAssign
->               , pPointerAssign
->               , pFieldAssign
->               , pArrayAssign
->               , pPFieldAssign
->               , pCall ]
+> pCmd = choice [ pReturn 
+>               , pVarDef 
+>               , pCall  
+>               , pAssign ]
 >        where
->           pVarDef = VarDef <$> typeParser <*> pName <*> pRhs
->           pVarAssign = VarAssign <$> pName <*> pRhs
->           pPointerAssign = PointerAssign <$> (reservedOp "*" *> pName) <*> pRhs
->           pArrayAssign = ArrayAssign <$> pName <*> brackets pExpr <*> pRhs
->           pFieldAssign = FieldAssign <$> pName <*> (reservedOp "." *> pName) <*> pRhs
->           pPFieldAssign = PFieldAssign <$> pName <*> (reservedOp "->" *> pName) <*> pRhs
->           pCall = CCall <$> pName <*> parens (pExp `sepBy` comma)               
->           pRhs = reservedOp "=" *> pExpr
+>           pCall = try (CCall <$> pName <*> parens (pExp `sepBy` comma))
+>           pVarDef = try (VarDef <$> typeParser <*> pName <*> pRhs)
 >           pReturn = Return <$> (reserved "return" *> pExpr)
+              
+> pAssign :: Parser Cmd
+> pAssign = choice [ try pVarAssign
+>                  , try pPointerAssign
+>                  , try pArrayAssign
+>                  , try pFieldAssign
+>                  , try pPFieldAssign ]
+>           where         
+>             pVarAssign = VarAssign <$> pName <*> pRhs
+>             pPointerAssign = PointerAssign <$> (reservedOp "*" *> pName) <*> pRhs
+>             pArrayAssign = ArrayAssign <$> pName <*> brackets pExpr <*> pRhs
+>             pFieldAssign = FieldAssign <$> pName <*> (reservedOp "." *> pName) <*> pRhs
+>             pPFieldAssign = PFieldAssign <$> pName <*> (reservedOp "->" *> pName) <*> pRhs
+
+> pRhs :: Parser Exp            
+> pRhs = reservedOp "=" *> pExpr
   
 > pExpr :: Parser Exp
 > pExpr = f <$> pExp <*> option id (choice [ arrayP
