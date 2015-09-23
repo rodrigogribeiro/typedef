@@ -35,22 +35,23 @@ Solver top-level interface
 
 > solver :: Constr -> Conf -> IO (Either String [Decl])
 > solver c conf = do
->                  r <- runSolverM conf (solve c)
->                  return $ build (fst r)
+>                  (e,c) <- runSolverM conf (solve c)
+>                  return (either Left (Right . (++ (dx c))) (f e))
 >                 where
->                   build = either Left (Right . f)
->                   f = Map.foldrWithKey step []         
+>                   dx c = Map.foldrWithKey step []
+>                              (ctx c `Map.difference` ctx conf)
+>                   f = either Left (Right . g) 
+>                   g = foldr go []
+>                   go t@(Simple t') ac = DTypeDef t (sname t') : ac
 >                   step k t ac = DTypeDef t k : ac
        
-> solve :: Constr -> SolverM ([Type], Ctx)
+> solve :: Constr -> SolverM [Type]
 > solve c
 >     = do
 >         c1 <- solverStage1 c
 >         c2 <- solverStage2 c1
 >         s <- solverStage3 c2    
->         ts <- solverStage4 s
->         cx <- gets ctx
->         return (ts,cx)
+>         solverStage4 s
 
        
 
