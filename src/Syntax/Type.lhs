@@ -78,7 +78,7 @@ Instances for pretty printting types
 >     pprint LongDoubleComplex = text "long double _Complex"
 >     pprint Void = text "void"
 >     pprint (Struct fs n ) = text "struct" <+>
->                             braces (hcat $ punctuate semi (map pprint fs)) <+> pprint n
+>                             braces (hcat $ punctuate semi (map pprint fs))
 >     pprint (Pointer p) = pprint p <+> star
 >     pprint (Function n r ps) = pprint n <+>
 >                                pprint r <+>

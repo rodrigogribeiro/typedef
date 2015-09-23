@@ -122,12 +122,12 @@ A type for parsers
 >                     , [ Ex.Infix orP Ex.AssocLeft] ]
 
 > pAtom :: Parser Exp
-> pAtom = choice [ EVar <$> pName
+> pAtom = choice [ try (ECall <$> pName <*> parens (pExpr `sepBy` comma))
 >                , Lit  <$> pLiteral
->                , Cast <$> (parens typeParser) <*> pExp
->                , Addr <$> (reservedOp "&" *> pExp)
->                , PAccess <$> (reservedOp "*" *> pExp)
->                , ECall <$> pName <*> parens (pExp `sepBy` comma)
+>                , Cast <$> (parens typeParser) <*> pExpr
+>                , Addr <$> (reservedOp "&" *> pExpr)
+>                , PAccess <$> (reservedOp "*" *> pExpr)
+>                , EVar <$> pName
 >                , Null <$ reserved "NULL"]         
 
 

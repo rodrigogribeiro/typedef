@@ -11,6 +11,7 @@ Definition of substitutions and its operations
 > import qualified Data.Set as Set
     
 > import Syntax.Type
+> import Syntax.CoreC    
 > import Syntax.Constraint    
 
 
@@ -57,6 +58,12 @@ Substitution definition
 >     apply s = everywhere (mkT (\v -> if isVar v then maybe v id (Map.lookup (unVar v) s) else v))
 >     fv = everything Set.union (mkQ Set.empty (\t -> if isVar t then Set.singleton (unVar t) else Set.empty))
 
+
+> instance Substitutable Decl where
+>     apply s (DTypeDef t n) = DTypeDef (apply s t) n
+>     apply s (DFunction t n ps cs) = DFunction (apply s t) n (map (\(t,n) -> (apply s t, n)) ps) cs
+>     fv (DTypeDef t _) = fv t
+>     fv (DFunction t _ ps _) = foldr (\(t,_) ac -> fv t `Set.union` ac) (fv t) ps
 
 Occurs check test
 

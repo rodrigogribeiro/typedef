@@ -18,7 +18,7 @@ Basically the algorithm performs 3 stages:
 > import Control.Monad.Trans
   
 > import Data.Generics (everywhere, everything, listify, mkT, mkQ)
-> import Data.List (union)
+> import Data.List (union,nubBy)
 > import Data.Map(Map)
 > import qualified Data.Map as Map
 > import Data.Set(Set)
@@ -36,14 +36,19 @@ Solver top-level interface
 > solver :: Constr -> Conf -> IO (Either String [Decl])
 > solver c conf = do
 >                  (e,c) <- runSolverM conf (solve c)
->                  return (either Left (Right . (++ (dx c))) (f e))
+>                  return (either Left (Right . nubBy cmp . (map (apply (fix (defs c)))) . (++ (dx c))) (f e))
 >                 where
->                   dx c = Map.foldrWithKey step []
->                              (ctx c `Map.difference` ctx conf)
+>                   dx c = Map.foldrWithKey step [] (defs c)
 >                   f = either Left (Right . g) 
 >                   g = foldr go []
 >                   go t@(Simple t') ac = DTypeDef t (sname t') : ac
 >                   step k t ac = DTypeDef t k : ac
+>                   fix = Map.foldrWithKey (\ k v ac -> if isVar v then Map.insert (outVar v) (Var k) ac else ac) Map.empty
+>                   isVar (Var _) = True
+>                   isVar _ = False
+>                   outVar (Var n) = n
+>                   cmp (DTypeDef _ n) (DTypeDef _ n') = n == n'                 
+>                   
        
 > solve :: Constr -> SolverM [Type]
 > solve c
