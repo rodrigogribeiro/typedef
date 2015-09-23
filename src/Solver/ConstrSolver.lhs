@@ -17,7 +17,7 @@ Basically the algorithm performs 3 stages:
 > import Control.Monad.State(gets, modify)
 > import Control.Monad.Trans
   
-> import Data.Generics (everywhere, everything, mkT, mkQ)
+> import Data.Generics (everywhere, everything, listify, mkT, mkQ)
 > import Data.List (union)
 > import Data.Map(Map)
 > import qualified Data.Map as Map
@@ -42,12 +42,15 @@ Solver top-level interface
 >                   f = Map.foldrWithKey step []         
 >                   step k t ac = DTypeDef t k : ac
        
-> solve :: Constr -> SolverM Ctx
+> solve :: Constr -> SolverM ([Type], Ctx)
 > solve c
 >     = do
 >         c1 <- solverStage1 c
 >         c2 <- solverStage2 c1
->         solverStage3 c2
+>         s <- solverStage3 c2    
+>         ts <- solverStage4 s
+>         cx <- gets ctx
+>         return (ts,cx)
 
        
 
@@ -155,16 +158,35 @@ Stage 3: unification of equality constraints
 > intConversion :: CType -> CType -> Bool
 > intConversion t t' = integerPromotion t == integerPromotion t'  
   
-> solverStage3 :: Constr -> SolverM Ctx
+> solverStage3 :: Constr -> SolverM Subst
 > solverStage3 c
 >     = do
 >          s <- unify (collect c)     
 >          modify (\st -> st{fieldMap = Map.map (apply s) (fieldMap st),
 >                            ctx = Map.map (apply s) (ctx st) ,
 >                            defs = Map.map (apply s) (defs st) })
->          gets defs
+>          return s
+
+Stage 4: solving record constraints
+           
+> solverStage4 :: Subst -> SolverM [Type]
+> solverStage4 s = do
+>                    fs <- gets fieldMap
+>                    cx <- gets ctx      
+>                    Map.foldrWithKey (step cx) (return []) fs
+>                  where
+>                     isVar (Var _) = True
+>                     isVar _ = False
+>                     outVar (Var n) = n
+>                     step cx k v co = case Map.lookup k cx of
+>                                         Just ty -> if isVar ty then co >>= \ac -> return (Simple (Struct v (outVar ty)) : ac)
+>                                                      else error "Impossible! ConstrSolver.solverStage4!"
+>                                         Nothing -> undefinedSymbol k
            
 Error messages
+
+> undefinedSymbol :: Name -> SolverM a
+> undefinedSymbol n = throwError $ show $ text "Symbol\n" <> pprint n <> text "\nis undefined."
            
 > occursCheckError :: PPrint a => Name -> a -> SolverM b
 > occursCheckError n t = throwError $ show $ text "Variable\n"
