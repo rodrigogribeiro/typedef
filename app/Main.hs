@@ -38,8 +38,10 @@ makeFileName :: FilePath -> FilePath
 makeFileName p = p -<.> "tdef" 
 
 writeResults :: Config -> [String] -> IO ()                
-writeResults (Config inp Nothing) ts = writeFile (makeFileName inp)
+writeResults (Config inp Nothing) ts = do
+                                       writeFile (makeFileName inp)
                                                  (concat ts)
+                                       mapM_ putStrLn ts          
 writeResults (Config _ (Just o)) ts = writeFile o (concat ts)                      
 
 -- main function
