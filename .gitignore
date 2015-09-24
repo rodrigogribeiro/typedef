@@ -16,3 +16,6 @@ cabal.sandbox.config
 *.hp
 .stack-work/
 .DS_Store
+*.log
+*.aux
+*.pdf

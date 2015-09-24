@@ -1,0 +1,229 @@
+\documentclass[a4paper,8pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath,amsthm,thmtools}
+\usepackage{amsfonts}
+\usepackage{proof}
+\usepackage{color}
+\usepackage{amssymb}
+
+\newcommand{\constr}[1]{\ensuremath{\langle\langle\,#1\,\rangle\rangle}}
+
+\begin{document}
+
+     \title{Reconstrução de tipos em C}
+
+     \maketitle
+     
+
+     \section{Introdução}\label{intro}
+
+     O objetivo deste texto é apresentar o desenvolvimento de um
+     protótipo de ferramenta para inferir declarações de tipos não
+     presentes em programas C. Neste documento descreveremos
+     a sintaxe núcleo para programas C (Seção~\ref{corecsyn}), a
+     sintaxe de restrições (Seção~\ref{constraintsyn}) e a descrição
+     do resolvedor de restrições utilizado
+     (Seção~\ref{constraintsolver}).
+
+     \section{Sintaxe da Linguagem Fonte}\label{corecsyn}
+
+     Nas figuras seguintes, apresentamos a sintaxe da linguagem núcleo
+     considerada. Nesta figuras, utilizaremos as seguintes metavariáveis.
+
+     \begin{figure}[H]
+     \begin{tabular}{|l|l|}
+       \hline
+       Símbolo & Significado \\ \hline
+		$l$ & {literal} \\
+		$x$ & {variável}\\
+		$f$  & {identificador de função} \\
+		$\tau$ & {tipo}\\
+		$\circ$ & {operador binário qualquer}\\
+                $\rho : l \to \tau$ & {função para atribuir tipos a
+                                      literais}\\
+                $P$ & {programa} \\
+                $D$ & {declaração} \\
+                $C$ & {comando} \\
+                $E$ & {expressão}\\
+		\hline
+		\end{tabular}
+           \centering
+           \caption{Metavariáveis}
+           \label{figmetavar}
+       \end{figure}
+
+     Neste trabalho consideramos que um programa é uma lista de
+     declarações que podem ser definições de tipos (typedef's) e
+     funções. Uma definição de tipo é formada por um tipo e o novo 
+     nome atribuído a este. Por sua vez, Funções são descritas por seu 
+     nome, tipo de retorno, parâmetros e uma lista de comandos que 
+     compõe o corpo desta. Abaixo apresentamos a sintaxe de
+     declarações, em que elementos em fonte \texttt{typewriter}
+     denotam terminais.
+     
+     \begin{figure}[H]
+         \[
+               \begin{array}{lcl}
+                   P & ::=    & D^*\\
+                   D & ::=   & \texttt{typedef }\tau\:\:x\\
+                      & \mid & \tau\:f\:\texttt{(}ps\texttt{)} \texttt{\{}\mathbb{C}^*\texttt{\}} \\
+                   ps & ::= & \tau\:x \,\mid\,(\texttt{,}ps)^*
+               \end{array}
+         \]
+         \centering
+         \caption{Sintaxe de programas}
+         \label{figprogsyn}
+     \end{figure}
+
+     A sintaxe de tipos é bastante direta. A única peculiaridade é a
+     sintaxe de tipos para funções que consistem de uma lista de tipos
+     dos parâmetros (separados por vírgulas) em que o último elemento
+     é o tipo de retorno desta. Outro ponto é que não consideramos
+     como tipo da linguagem arranjos visto que estes podem ser
+     representados como ponteiros.
+
+     \begin{figure}[H]
+       \[
+         \begin{array}{lcll}
+           \tau & ::= & \textbf{B} & \{\text{tipos básicos: void, int,
+                                     etc.}\}\\
+                & \mid & \star\, \tau & \{\text{ponteiros}\} \\
+                & \mid & \{x_i : \tau_i\}^{i=1..n} & \{\text{registros}\} \\
+                & \mid & \texttt{(}\tau^*, \tau\texttt{)} & \{\text{tipos de funções}\}\\
+         \end{array}
+       \]
+       \centering
+       \caption{Sintaxe de tipos}
+       \label{figtypesyn}
+     \end{figure}
+     
+     Existem 8 tipos de comandos na linguagem considerada: Chamadas de
+     função, retorno de função, definição de variável, atribuição de
+     variável, atribuição a um item de um arranjo, atribuição a um
+     ponteiro, atribuição a um campo (de registro) e atribuição a um
+     campo em um ponteiro para registro.
+
+     \begin{figure}[H]
+       \[
+         \begin{array}{lcll}
+           \mathbb{C} & ::=   & \tau\:x\:=\:e & \{\text{var. def.}\} \\
+             & \mid & x\:=\:e & \{\text{atrib. var.}\} \\
+             & \mid & \star\,x\:=\:e & \{\text{atrib. pont.}\} \\
+             & \mid & x[e]\:=\:e &\{\text{atrib. arranjo}\} \\
+             & \mid & x.x'\: = \: e & \{\text{atrib. campo}\} \\
+             & \mid & x\to x\: = \: e & \{\text{atrib. campo pont.}\}\\
+             & \mid & f(e^*) & \{\text{chamada de função}\} \\
+             & \mid & \texttt{return }e & \{\text{retorno}\}
+         \end{array} \]
+       \centering
+       \caption{Sintaxe de comandos}
+       \label{figcmdsyn}
+    \end{figure}
+
+    A sintaxe de expressões é apresentada na figura seguinte. A
+    linguagem núcleo considerada consiste de literais, variáveis,
+    acesso a campo, acesso a arranjo, coerção, expressões contendo
+    operadores binários, chamadas de função e outras expressões
+    relacionadas ao uso de ponteiros.
+
+    \begin{figure}[H]
+       \[
+         \begin{array}{lcll}
+           e & ::= & l & \{\text{literal}\} \\
+             & \mid & x & \{\text{variável}\} \\
+             & \mid & e . x & \{\text{acesso a campo}\}\\
+             & \mid & e\,[e_1] & \{\text{accesso arranjo}\} \\
+             & \mid & (\tau)\,e & \{\text{casting}\} \\
+             &\mid & e\circ e' & \{\text{bin op}\} \\
+             & \mid & \&\,e & \{\text{address}\} \\
+             & \mid & \star\,e & \{\text{deref. ponteiro}\}\\
+             & \mid & e \to x & \{\text{ref. campo ponteiro}\}\\
+             & \mid & f(e_i)^{i=0..n} & \{\text{chamada função}\}\\
+         \end{array} \]
+         \centering
+         \caption{Sintaxe de expressões}
+         \label{exprsyn}
+    \end{figure}
+
+
+
+     \section{Sintaxe da Linguagem de Restrições}\label{constraintsyn}
+
+     Antes de apresentarmos a sintaxe de restrições, mostraremos sua
+     interpretação intuitiva. Esta é apresentada abaixo.
+
+       \begin{itemize}
+           \item Existência de definição de tipo: $isdef\:\tau$.
+           \item Existência de declaração de variável: $def\:x\,:\,\tau$.
+           \item Igualdade de tipos: $\tau \equiv \tau'$.
+	   \item Existencia de campos: $has(x,x:\tau')$.
+           \item Nova variável de tipo: $\exists \,\alpha. \mathbb{C}$
+       \end{itemize}
+
+      
+     \section{Coletando Restrições}\label{constrcollect}
+
+
+     \begin{figure}[H]
+       \[\small{
+            \begin{array}{lcl}
+                \constr{l : \tau} & = & \rho(l) \equiv \tau\\
+                \constr{x : \tau} & = & x \equiv \tau \\
+                \constr{\circ : \tau} & = & \circ \equiv \tau \\
+                \constr{f : \tau^{0..n}\to \tau'} & = & f \equiv
+                                                        \tau^{0..n}\to
+                                                        \tau' \\
+                \constr{e.x : \tau} & = & \exists
+                                          \alpha_1\,\alpha_2. \constr{e
+                                          : \alpha_1} \land \constr{x
+                                          : \alpha_2} \land \\
+                          & & has(\alpha_1,x:\alpha_2) \land \tau
+                              \equiv \alpha_2\\
+                \constr{e[e_1] : \tau} & = & \exists
+                                         \alpha_1\alpha_2\alpha_3. \constr{e:\alpha_1}
+                                             \land\constr{e_1:\alpha_2}\land\\
+                         & & \alpha_1\equiv\alpha_3[]\land \tau \equiv
+                             \alpha_3\\
+                \constr{(\tau')\,e:\tau} & = & \constr{e : \tau} \land
+                                               \tau \equiv \tau'\\
+                \constr{f(e^{i=0..n}) : \tau} & = & \exists
+                                                    \alpha^{i=0..n}. \bigwedge_{i=0..n}\constr{e_i:\alpha_i}
+                                                    \land \constr{f :
+                                                    \alpha^{i=0..n}
+                                                    \to \tau} \\
+                     \constr{e \circ e' : \tau} & = & \exists
+                                                      \alpha_1\alpha_2.\constr{e
+                                                      :\alpha_1} \land
+                                                      \constr{e' :
+                                                      \alpha_2} \land
+                                                      \constr{\circ :
+                                                      \alpha_1\to\alpha_2\to\tau}\\
+                     \constr{\&\,e : \tau} & = & \exists \alpha
+                                                 \alpha'. \constr{e :
+                                                 \alpha} \land
+                                                 \alpha \equiv \star \alpha'
+                                                 \land \tau = int\\
+                     \constr{\star\,e : \tau} & = & \exists
+                                                    \alpha. \constr{e
+                                                    : \alpha} \land
+                                                    \alpha = \star \tau\\
+                     \constr{e\to x : \tau} & = & \exists
+                                                  \alpha_1\alpha_2\alpha_3. \constr{e
+                                                  :\alpha_1} \land
+                                                  \constr{x :
+                                                  \alpha_3} \land
+                                                  \alpha_1 = \star\alpha_2
+                                                  \land\\
+                          & & has(\alpha,x : \alpha_3) \land \tau
+                              \equiv \alpha_3\\
+            \end{array}}
+       \]
+       \centering
+       \caption{Gerador de restrições}
+       \label{figgen}
+     \end{figure}
+
+     \section{Resolvedor de Restrições}\label{constraintsolver}
+
+\end{document}

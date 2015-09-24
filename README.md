@@ -14,7 +14,7 @@ Install
     stack setup
 
 to install the correct version for GHC Haskell compiler (that will be
-the lastest one).
+the latest one).
 
 3 - Run
 
@@ -43,6 +43,8 @@ execute the test suite, just run
 
     stack test
 
+Note that not all examples are handled. Examples using function
+pointers and array syntax initialization are not supported (yet!).
 
 Bugs and other things
 -----------------
