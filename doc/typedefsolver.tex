@@ -31,7 +31,7 @@
      Nas figuras seguintes, apresentamos a sintaxe da linguagem núcleo
      considerada. Nesta figuras, utilizaremos as seguintes metavariáveis.
 
-     \begin{figure}[H]
+     \begin{figure}[h]
      \begin{tabular}{|l|l|}
        \hline
        Símbolo & Significado \\ \hline
@@ -62,7 +62,7 @@
      declarações, em que elementos em fonte \texttt{typewriter}
      denotam terminais.
      
-     \begin{figure}[H]
+     \begin{figure}[h]
          \[
                \begin{array}{lcl}
                    P & ::=    & D^*\\
@@ -83,7 +83,7 @@
      como tipo da linguagem arranjos visto que estes podem ser
      representados como ponteiros.
 
-     \begin{figure}[H]
+     \begin{figure}[h]
        \[
          \begin{array}{lcll}
            \tau & ::= & \textbf{B} & \{\text{tipos básicos: void, int,
@@ -104,7 +104,7 @@
      ponteiro, atribuição a um campo (de registro) e atribuição a um
      campo em um ponteiro para registro.
 
-     \begin{figure}[H]
+     \begin{figure}[h]
        \[
          \begin{array}{lcll}
            \mathbb{C} & ::=   & \tau\:x\:=\:e & \{\text{var. def.}\} \\
@@ -127,7 +127,7 @@
     operadores binários, chamadas de função e outras expressões
     relacionadas ao uso de ponteiros.
 
-    \begin{figure}[H]
+    \begin{figure}[h]
        \[
          \begin{array}{lcll}
            e & ::= & l & \{\text{literal}\} \\
@@ -165,7 +165,7 @@
      \section{Coletando Restrições}\label{constrcollect}
 
 
-     \begin{figure}[H]
+     \begin{figure}[h]
        \[\small{
             \begin{array}{lcl}
                 \constr{l : \tau} & = & \rho(l) \equiv \tau\\
@@ -182,9 +182,9 @@
                               \equiv \alpha_2\\
                 \constr{e[e_1] : \tau} & = & \exists
                                          \alpha_1\alpha_2\alpha_3. \constr{e:\alpha_1}
-                                             \land\constr{e_1:\alpha_2}\land\\
-                         & & \alpha_1\equiv\alpha_3[]\land \tau \equiv
-                             \alpha_3\\
+                                             \land\constr{e_1: int}\land\\
+                         & & \alpha_1\equiv\star\,\alpha_3 \land \tau
+                             \equiv\alpha_3\\
                 \constr{(\tau')\,e:\tau} & = & \constr{e : \tau} \land
                                                \tau \equiv \tau'\\
                 \constr{f(e^{i=0..n}) : \tau} & = & \exists
@@ -199,11 +199,11 @@
                                                       \alpha_2} \land
                                                       \constr{\circ :
                                                       \alpha_1\to\alpha_2\to\tau}\\
-                     \constr{\&\,e : \tau} & = & \exists \alpha
+                     \constr{\&\,e : \tau} & = & \exists \alpha\,
                                                  \alpha'. \constr{e :
-                                                 \alpha} \land
+                                                 \alpha'} \land
                                                  \alpha \equiv \star \alpha'
-                                                 \land \tau = int\\
+                                                 \land \tau = \alpha\\
                      \constr{\star\,e : \tau} & = & \exists
                                                     \alpha. \constr{e
                                                     : \alpha} \land

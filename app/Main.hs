@@ -17,7 +17,7 @@ config = Config <$> strOption
                       (  long "input-file"
                       <> short 'i'        
                       <> metavar "INPUT"
-                      <> help "Constraint input file")
+                      <> help "Core C or Constraint input file")
                 <*> optional
                       (strOption
                          (  long "output-file"
