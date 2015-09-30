@@ -155,15 +155,40 @@
 
        \begin{itemize}
            \item Existência de definição de tipo: $isdef\:\tau$.
-           \item Existência de declaração de variável: $def\:x\,:\,\tau$.
+           \item Existência de declaração de variável:
+             $def\:x\,:\,\tau \text{ in } \mathbb{K}$.
            \item Igualdade de tipos: $\tau \equiv \tau'$.
-	   \item Existencia de campos: $has(x,x:\tau')$.
-           \item Nova variável de tipo: $\exists \,\alpha. \mathbb{C}$
+	   \item Existencia de campos: $has(x,x:\tau')$ --- o campo $x'
+             : \tau$ é parte do tipo da variável (expressão) $x$.
+           \item Nova variável de tipo: $\exists \,\alpha. \mathbb{K}$
        \end{itemize}
 
+     A sintaxe de restrições é apresentada a seguir. Note que a
+     conjunção de duas restrições é feita usando o operador ``,''.
+     \begin{figure}[h]
+        \[
+             \begin{array}{lcl}
+                 \mathbb{K} & ::= & \tau \equiv \tau \\
+                                    & \mid & isdef\:\tau \\
+                                    & \mid & has(x,x' : \tau) \\
+                                    & \mid & def\:x:\tau\:\text{ in
+                                             }\mathbb{K}\\
+                                    & \mid &
+                                             \exists\,\alpha.\mathbb{K}\\
+                                    & \mid & \mathbb{K}\,,\,\mathbb{K}
+             \end{array}
+        \]
+        \centering
+        \caption{Sintaxe de restrições}
+        \label{figconstrsyn}
+      \end{figure}
       
      \section{Coletando Restrições}\label{constrcollect}
 
+     O processo de geração de restrições consiste em percorrer a
+     sintaxe do programa para construção de uma fórmula que, se
+     satisfazível, seu modelo é dado pelas declarações de tipo
+     no programa fornecido como entrada. 
 
      \begin{figure}[h]
        \[\small{
@@ -224,6 +249,23 @@
        \label{figgen}
      \end{figure}
 
+     É importante notar que é responsabilidade
+     do processo de geração a implementação da função que calcula o
+     tipo de literais ($\rho$).
+
      \section{Resolvedor de Restrições}\label{constraintsolver}
 
+     O resolvedor é apenas uma pequena modificação de um algoritmo de
+     unificação. Este pode ser resumido nos seguintes passos:
+     \begin{enumerate}
+          \item Coletar definições, restrições de campos e inserir
+            variáveis ``fresh'' no lugar de variáveis existencialmente
+            quantificadas.
+          \item Expandir definições nas restrições.
+          \item Resolver restrições de igualdade usando unificação.
+          \item Aplicar a substituição gerada pela unificação nas
+            restrições de registros.
+          \item Gerar definições de registros com base nas restrições
+            de campos.
+     \end{enumerate}
 \end{document}

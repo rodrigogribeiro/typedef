@@ -8,7 +8,7 @@ Basically the algorithm performs 3 stages:
 1 - Create all fresh variables for existencial quantifiers, collects all definitions and field constraints
 2 - Expand all definitions types  
 3 - Solve all equality constraints and updatesfield constraints by applying the resulting unifier
-
+4 - Build record definitions from field constraints
 
 > module Solver.ConstrSolver(solver) where
 
