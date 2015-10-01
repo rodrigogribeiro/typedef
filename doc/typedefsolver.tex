@@ -245,13 +245,39 @@
             \end{array}}
        \]
        \centering
-       \caption{Gerador de restrições}
+       \caption{Gerador de restrições --- parte 1}
        \label{figgen}
      \end{figure}
 
      É importante notar que é responsabilidade
      do processo de geração a implementação da função que calcula o
      tipo de literais ($\rho$).
+
+     \begin{figure}[h]
+       \[
+          \small{
+           \begin{array}{lcl}
+               \constr{\emptyset} & = & true \\
+               \constr{\tau\:x := e; S} & = & \exists \alpha. \constr{e : \alpha} \land
+                                              def\:\tau\: in\:
+                                              def\,x:\tau\,in\,\constr{S}
+             \land \tau \equiv \alpha\\
+               \constr{x := e ; S} & = & \exists \alpha. \constr{x : \alpha}\land\constr{e : \alpha} \land
+                                                      \constr{S}\\ 
+               \constr{\star\,x := e ; S} & = & \exists \alpha \alpha'. \constr{x : \alpha'}\land\constr{e : \alpha} \land
+                                                      \alpha' \equiv
+                                                \star \alpha)\land\constr{S}\\ 
+               \constr{x[e'] := e ; S} & = &
+                                             \exists\alpha_1\alpha_2\alpha_3.\constr{e'
+                                             : \alpha_1}\land \alpha_1
+                                             = int \land \constr{e :
+                                             \alpha_2} \land \\ 
+                       & & \constr{x : \alpha_3} \land
+                           \alpha_3 \equiv \alpha_2[] \\
+           \end{array}}
+       \]
+       \caption{Gerador de restrições --- parte 2}
+     \end{figure}
 
      \section{Resolvedor de Restrições}\label{constraintsolver}
 
@@ -268,4 +294,50 @@
           \item Gerar definições de registros com base nas restrições
             de campos.
      \end{enumerate}
+
+     \section{Exemplos}
+
+     Nesta seção apresento exemplos enviados pelo Fernando e as
+     suas respectivas restrições.
+
+     \subsection{Exemplo 1 --- arquivo T0.c}
+
+     Código C.
+
+     \begin{verbatim}
+T foo (int i) {
+   return i + 1;
+}
+
+  \end{verbatim}
+
+     Restrição
+
+     \begin{verbatim}
+isdef T , (def foo = foo T (int) in def i = int in 
+    exists x_1 . exists x_2 . i = x_1 , 
+      (x_2 = int , + = + T (x_1,x_2)))
+  \end{verbatim}
+
+     \subsection{Exemplo 2 --- arquivo T3.c}
+
+     Código C.
+
+     \begin{verbatim}
+int main (){
+   T t;
+   t.i = 0;
+   t.next = &t;
+}
+  \end{verbatim}
+
+     Restrição
+
+     \begin{verbatim}
+def main = main int () in isdef T , def t = T in  
+   (exists x_1 . x_1 = int , (i = x_1 , has(t ,x_1 i)) , 
+     (exists x_2 . exists x_3 . t = x_3 , x_2 = x_3 * , 
+       (next = x_2 , has(t ,x_2 next))))
+  \end{verbatim}
+
 \end{document}

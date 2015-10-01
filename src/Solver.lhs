@@ -23,6 +23,7 @@ Solver top level function
 >               Right p  ->
 >                   do
 >                     t <- generator p
+>                     print (pprint t)
 >                     r' <- S.solver t initialConf
 >                     case r' of
 >                       Left err' -> return (Left err')
