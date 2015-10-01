@@ -314,10 +314,12 @@ T foo (int i) {
      Restrição
 
      \begin{verbatim}
-isdef T , (def foo = foo T (int) in def i = int in 
-    exists x_1 . exists x_2 . i = x_1 , 
-      (x_2 = int , + = + T (x_1,x_2)))
-  \end{verbatim}
+isdef T , 
+   (def foo = (int,T) in 
+      def i = int in 
+          exists x_1 . exists x_2 . i = x_1 , (x_2 = int , + =
+   (x_1,x_2,T)))   
+   \end{verbatim}
 
      \subsection{Exemplo 2 --- arquivo T3.c}
 
@@ -334,10 +336,12 @@ int main (){
      Restrição
 
      \begin{verbatim}
-def main = main int () in isdef T , def t = T in  
-   (exists x_1 . x_1 = int , (i = x_1 , has(t ,x_1 i)) , 
-     (exists x_2 . exists x_3 . t = x_3 , x_2 = x_3 * , 
-       (next = x_2 , has(t ,x_2 next))))
-  \end{verbatim}
+def main = (int) in 
+   isdef T , def t = T in , 
+      (exists x_1 . x_1 = int , (i = x_1 , has(t ,x_1 i)) , 
+         (exists x_2 . 
+              exists x_3 . t = x_3 , x_2 = x_3 * , 
+                  (next = x_2 , has(t ,x_2 next))))
+   \end{verbatim}
 
 \end{document}

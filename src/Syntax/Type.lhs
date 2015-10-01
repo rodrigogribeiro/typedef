@@ -80,10 +80,8 @@ Instances for pretty printting types
 >     pprint (Struct fs n ) = text "struct" <+>
 >                             braces (hcat $ punctuate semi (map pprint fs))
 >     pprint (Pointer p) = pprint p <+> star
->     pprint (Function n r ps) = pprint n <+>
->                                pprint r <+>
->                                parens (hcat $ punctuate comma
->                                                  (map pprint ps)) 
+>     pprint (Function n r ps) = parens (hcat $ punctuate comma
+>                                       (map pprint (ps ++ [r]))) 
 
 
 > instance PPrint Type where
