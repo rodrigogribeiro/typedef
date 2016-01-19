@@ -76,21 +76,21 @@
          \label{figprogsyn}
      \end{figure}
 
-     A sintaxe de tipos é bastante direta. A única peculiaridade é a
-     sintaxe de tipos para funções que consistem de uma lista de tipos
-     dos parâmetros (separados por vírgulas) em que o último elemento
-     é o tipo de retorno desta. Outro ponto é que não consideramos
+     A sintaxe de tipos é bastante direta. Representaremos tipos de
+     funções usando o construtor de tipos $\to$, de maneira similar ao
+     utilizado em linguagens funcionais como Haskell. 
+     Outro ponto é que não consideramos
      como tipo da linguagem arranjos visto que estes podem ser
      representados como ponteiros.
 
      \begin{figure}[h]
        \[
          \begin{array}{lcll}
-           \tau & ::= & \textbf{B} & \{\text{tipos básicos: void, int,
-                                     etc.}\}\\
+           \tau & ::= & \textbf{B} & \{\text{construtores de tipos:
+                                     int, bool, etc.}\}\\
                 & \mid & \star\, \tau & \{\text{ponteiros}\} \\
                 & \mid & \{x_i : \tau_i\}^{i=1..n} & \{\text{registros}\} \\
-                & \mid & \texttt{(}\tau^*, \tau\texttt{)} & \{\text{tipos de funções}\}\\
+                & \mid & \tau^* \to \tau & \{\text{tipos de funções}\}\\
          \end{array}
        \]
        \centering
@@ -98,11 +98,11 @@
        \label{figtypesyn}
      \end{figure}
      
-     Existem 8 tipos de comandos na linguagem considerada: Chamadas de
+     Existem 10 tipos de comandos na linguagem considerada: Chamadas de
      função, retorno de função, definição de variável, atribuição de
      variável, atribuição a um item de um arranjo, atribuição a um
-     ponteiro, atribuição a um campo (de registro) e atribuição a um
-     campo em um ponteiro para registro.
+     ponteiro, atribuição a um campo (de registro), atribuição a um
+     campo em um ponteiro para registro, comandos de repetição e condicional.
 
      \begin{figure}[h]
        \[
@@ -114,7 +114,11 @@
              & \mid & x.x'\: = \: e & \{\text{atrib. campo}\} \\
              & \mid & x\to x\: = \: e & \{\text{atrib. campo pont.}\}\\
              & \mid & f(e^*) & \{\text{chamada de função}\} \\
-             & \mid & \texttt{return }e & \{\text{retorno}\}
+             & \mid & \texttt{return }e & \{\text{retorno}\} \\
+             & \mid & \texttt{while (}e \texttt{)\{} \mathbb{C}^*
+                      \texttt{\}} & \{\text{while}\} \\
+             & \mid & \texttt{if (} e \texttt{) \{}\mathbb{C}^*
+                      \texttt{\}} & \{\text{if}\} \\
          \end{array} \]
        \centering
        \caption{Sintaxe de comandos}
@@ -154,28 +158,28 @@
      interpretação intuitiva. Esta é apresentada abaixo.
 
        \begin{itemize}
-           \item Existência de definição de tipo: $isdef\:\tau$.
+           \item Existência de definição de tipo: $typedef\:\tau$.
            \item Existência de declaração de variável:
              $def\:x\,:\,\tau \text{ in } \mathbb{K}$.
            \item Igualdade de tipos: $\tau \equiv \tau'$.
-	   \item Existencia de campos: $has(x,x:\tau')$ --- o campo $x'
-             : \tau$ é parte do tipo da variável (expressão) $x$.
+	   \item Existência de campos: $has(\tau,x:\tau')$ --- o campo $x'
+             : \tau'$ é parte do tipo $\tau$.
            \item Nova variável de tipo: $\exists \,\alpha. \mathbb{K}$
        \end{itemize}
 
-     A sintaxe de restrições é apresentada a seguir. Note que a
-     conjunção de duas restrições é feita usando o operador ``,''.
+     A sintaxe de restrições é apresentada a seguir. 
+
      \begin{figure}[h]
         \[
              \begin{array}{lcl}
                  \mathbb{K} & ::= & \tau \equiv \tau \\
-                                    & \mid & isdef\:\tau \\
-                                    & \mid & has(x,x' : \tau) \\
+                                    & \mid & typedef\:\tau \\
+                                    & \mid & has(\tau, x' : \tau') \\
                                     & \mid & def\:x:\tau\:\text{ in
                                              }\mathbb{K}\\
                                     & \mid &
                                              \exists\,\alpha.\mathbb{K}\\
-                                    & \mid & \mathbb{K}\,,\,\mathbb{K}
+                                    & \mid & \mathbb{K}\,\land\,\mathbb{K}
              \end{array}
         \]
         \centering
@@ -190,14 +194,19 @@
      satisfazível, seu modelo é dado pelas declarações de tipo
      no programa fornecido como entrada. 
 
+     É importante notar que é responsabilidade
+     do processo de geração a implementação da função que calcula o
+     tipo de literais ($\rho$).
+
+
      \begin{figure}[h]
        \[\small{
             \begin{array}{lcl}
                 \constr{l : \tau} & = & \rho(l) \equiv \tau\\
                 \constr{x : \tau} & = & x \equiv \tau \\
                 \constr{\circ : \tau} & = & \circ \equiv \tau \\
-                \constr{f : \tau^{0..n}\to \tau'} & = & f \equiv
-                                                        \tau^{0..n}\to
+                \constr{f : \tau^{1..n}\to \tau'} & = & f \equiv
+                                                        \tau^{1..n}\to
                                                         \tau' \\
                 \constr{e.x : \tau} & = & \exists
                                           \alpha_1\,\alpha_2. \constr{e
@@ -207,15 +216,15 @@
                               \equiv \alpha_2\\
                 \constr{e[e_1] : \tau} & = & \exists
                                          \alpha_1\alpha_2\alpha_3. \constr{e:\alpha_1}
-                                             \land\constr{e_1: int}\land\\
+                                             \land\constr{e_1: \alpha_2}\land\\
                          & & \alpha_1\equiv\star\,\alpha_3 \land \tau
-                             \equiv\alpha_3\\
+                             \equiv\alpha_3 \land \alpha_2 = int\\
                 \constr{(\tau')\,e:\tau} & = & \constr{e : \tau} \land
                                                \tau \equiv \tau'\\
-                \constr{f(e^{i=0..n}) : \tau} & = & \exists
-                                                    \alpha^{i=0..n}. \bigwedge_{i=0..n}\constr{e_i:\alpha_i}
+                \constr{f(e^{i=1..n}) : \tau} & = & \exists
+                                                    \alpha^{i=1..n}. \bigwedge_{i=1..n}\constr{e_i:\alpha_i}
                                                     \land \constr{f :
-                                                    \alpha^{i=0..n}
+                                                    \alpha^{i=1..n}
                                                     \to \tau} \\
                      \constr{e \circ e' : \tau} & = & \exists
                                                       \alpha_1\alpha_2.\constr{e
@@ -249,9 +258,6 @@
        \label{figgen}
      \end{figure}
 
-     É importante notar que é responsabilidade
-     do processo de geração a implementação da função que calcula o
-     tipo de literais ($\rho$).
 
      \begin{figure}[h]
        \[
@@ -259,26 +265,66 @@
            \begin{array}{lcl}
                \constr{\emptyset} & = & true \\
                \constr{\tau\:x := e; S} & = & \exists \alpha. \constr{e : \alpha} \land
-                                              def\:\tau\: in\:
+                                              typedef\:\tau \land
                                               def\,x:\tau\,in\,\constr{S}
              \land \tau \equiv \alpha\\
                \constr{x := e ; S} & = & \exists \alpha. \constr{x : \alpha}\land\constr{e : \alpha} \land
                                                       \constr{S}\\ 
                \constr{\star\,x := e ; S} & = & \exists \alpha \alpha'. \constr{x : \alpha'}\land\constr{e : \alpha} \land
                                                       \alpha' \equiv
-                                                \star \alpha)\land\constr{S}\\ 
+                                                \star \alpha\land\constr{S}\\ 
                \constr{x[e'] := e ; S} & = &
                                              \exists\alpha_1\alpha_2\alpha_3.\constr{e'
                                              : \alpha_1}\land \alpha_1
                                              = int \land \constr{e :
                                              \alpha_2} \land \\ 
                        & & \constr{x : \alpha_3} \land
-                           \alpha_3 \equiv \alpha_2[] \\
+                           \alpha_3 \equiv \star\,\alpha_2 \land \constr{S}\\
+               \constr{f(e^{i=1..n}) ; S} & = & \exists
+                                            \alpha_{i=1..n +1}.\bigwedge_{i
+                                            = 1..n}\constr{e_i :
+                                            \alpha_i} \land \constr{f
+                                            : \alpha_{i = 0.. n} \to
+                                            \alpha_{n + 1}} \land
+                                                \constr{S}\\
+               \constr{\texttt{while (} e
+             \texttt{)\{}\mathbb{C}\texttt{\}}} &= & \constr{e : bool}
+                                                     \land
+                                                     \constr{\mathbb{C}}\\
+             \constr{\texttt{if (} e \texttt{)\{} \mathbb{C}
+             \texttt{\}}} & = & \constr{e : bool}
+                                                     \land
+                                                     \constr{\mathbb{C}}\\
            \end{array}}
        \]
        \caption{Gerador de restrições --- parte 2}
      \end{figure}
 
+     \begin{figure}[h]
+       \[
+         \small{
+           \begin{array}{lcl}
+               \constr{\emptyset} & = & true \\
+               \constr{\texttt{typedef }\tau\:\:x\,,D} & = &
+                                                             typedef\:x\land
+                                                             x = \tau
+                                                             \land \constr{D}\\
+               \constr{\tau\:f\:\texttt{(}(\tau\:x)^{i=1..n}\texttt{)}
+             \texttt{\{}\mathbb{C}^*\texttt{\}}} & = & def\,\,f :
+                                                       \tau_{i =
+                                                       1.. n}\to \tau
+                                                       \:in\: 
+                                                       (def\,\,x_i :
+                                                       \tau_i)_{i
+                                                       = 1..n}\: in\: \constr{C} 
+           \end{array}
+         }
+       \]
+       \caption{Gerador de restrições --- parte 3}
+     \end{figure}
+
+     \clearpage
+     
      \section{Resolvedor de Restrições}\label{constraintsolver}
 
      O resolvedor é apenas uma pequena modificação de um algoritmo de
@@ -295,53 +341,53 @@
             de campos.
      \end{enumerate}
 
-     \section{Exemplos}
+%      \section{Exemplos}
 
-     Nesta seção apresento exemplos enviados pelo Fernando e as
-     suas respectivas restrições.
+%      Nesta seção apresento exemplos enviados pelo Fernando e as
+%      suas respectivas restrições.
 
-     \subsection{Exemplo 1 --- arquivo T0.c}
+%      \subsection{Exemplo 1 --- arquivo T0.c}
 
-     Código C.
+%      Código C.
 
-     \begin{verbatim}
-T foo (int i) {
-   return i + 1;
-}
+%      \begin{verbatim}
+% T foo (int i) {
+%    return i + 1;
+% }
 
-  \end{verbatim}
+%   \end{verbatim}
 
-     Restrição
+%      Restrição
 
-     \begin{verbatim}
-isdef T , 
-   (def foo = (int,T) in 
-      def i = int in 
-          exists x_1 . exists x_2 . i = x_1 , (x_2 = int , + =
-   (x_1,x_2,T)))   
-   \end{verbatim}
+%      \begin{verbatim}
+% isdef T , 
+%    (def foo = (int,T) in 
+%       def i = int in 
+%           exists x_1 . exists x_2 . i = x_1 , (x_2 = int , + =
+%    (x_1,x_2,T)))   
+%    \end{verbatim}
 
-     \subsection{Exemplo 2 --- arquivo T3.c}
+%      \subsection{Exemplo 2 --- arquivo T3.c}
 
-     Código C.
+%      Código C.
 
-     \begin{verbatim}
-int main (){
-   T t;
-   t.i = 0;
-   t.next = &t;
-}
-  \end{verbatim}
+%      \begin{verbatim}
+% int main (){
+%    T t;
+%    t.i = 0;
+%    t.next = &t;
+% }
+%   \end{verbatim}
 
-     Restrição
+%      Restrição
 
-     \begin{verbatim}
-def main = (int) in 
-   isdef T , def t = T in , 
-      (exists x_1 . x_1 = int , (i = x_1 , has(t ,x_1 i)) , 
-         (exists x_2 . 
-              exists x_3 . t = x_3 , x_2 = x_3 * , 
-                  (next = x_2 , has(t ,x_2 next))))
-   \end{verbatim}
+%      \begin{verbatim}
+% def main = (int) in 
+%    isdef T , def t = T in , 
+%       (exists x_1 . x_1 = int , (i = x_1 , has(t ,x_1 i)) , 
+%          (exists x_2 . 
+%               exists x_3 . t = x_3 , x_2 = x_3 * , 
+%                   (next = x_2 , has(t ,x_2 next))))
+%    \end{verbatim}
 
 \end{document}
