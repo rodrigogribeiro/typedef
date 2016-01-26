@@ -1,0 +1,1 @@
+def main = (int) in isdef T , (def t = T in True) , (exists x_1 . x_1 = int , (i = x_1 , has(t ,x_1 i)) , (exists x_2 . exists x_3 . t = x_3 , x_2 = x_3 * , (next = x_2 , has(t ,x_2 next))))

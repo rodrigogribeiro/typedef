@@ -1,7 +1,1 @@
-isdef T,
-      def x : T in
-      	  exists a.
-	     def c : char in
-	        a = char ,
-		  exists a1 . exists a2. exists a3. x = a1 , c = a2 , c = a3 , a2 = a3, has(a1, a2 c),
-		  	 exists a4. exists a5. exists a6. x = a6 , i = a5, a5 = int , has(a6, a5 i)
+def main = (int) in isdef T , (def x = T in True) , (def c = char in char = char , (exists x_1 . c = x_1 , (c = x_1 , has(x ,x_1 c)) , (exists x_2 . x_2 = int , (i = x_2 , has(x ,x_2 i)))))

@@ -5,6 +5,7 @@ Solver top level interface module
   
 > import Data.Map(Map)
 > import qualified Data.Map as Map
+> import System.FilePath    
 
 > import Gen.ConstrGen
 > import Parser.CoreCParser    
@@ -15,15 +16,15 @@ Solver top level interface module
 
 Solver top level function       
      
-> solver :: String -> IO (Either String [String])
-> solver s = do
->             let r = parser s        
->             case r of
->               Left err -> return (Left err)
->               Right p  ->
+> solver :: String -> String -> IO (Either String [String])
+> solver s f = do
+>              let r = parser s        
+>              case r of
+>                Left err -> return (Left err)
+>                Right p  ->
 >                   do
 >                     t <- generator p
->                     print (pprint t)
+>                     writeFile (f -<.> "ctr") (show $ pprint t)
 >                     r' <- S.solver t initialConf
 >                     case r' of
 >                       Left err' -> return (Left err')
