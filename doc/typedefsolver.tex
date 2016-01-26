@@ -90,13 +90,20 @@
                                      int, bool, etc.}\}\\
                 & \mid & \star\, \tau & \{\text{ponteiros}\} \\
                 & \mid & \{x_i : \tau_i\}^{i=1..n} & \{\text{registros}\} \\
-                & \mid & \tau^* \to \tau & \{\text{tipos de funções}\}\\
+                & \mid & \tau \to \tau & \{\text{tipos de
+                                           funções}\}\\
+               & \mid & \alpha & \{\text{variáveis de tipos}\}
          \end{array}
        \]
        \centering
        \caption{Sintaxe de tipos}
        \label{figtypesyn}
      \end{figure}
+
+     A metavariável \textbf{t} representa tipos que não possuem
+     variáveis (i.e. tipos instanciados). Denotamos por $fields(\tau)$
+     uma função que retorna o conjunto de campos de um tipo
+     $\tau$. Caso $\tau$ não seja um registro, $fields(\tau) = \emptyset$.
      
      Existem 10 tipos de comandos na linguagem considerada: Chamadas de
      função, retorno de função, definição de variável, atribuição de
@@ -158,7 +165,7 @@
      interpretação intuitiva. Esta é apresentada abaixo.
 
        \begin{itemize}
-           \item Existência de definição de tipo: $typedef\:\tau\:as\:$.
+           \item Existência de definição de tipo: $typedef\:\tau\:as\:\tau'$.
            \item Existência de declaração de variável:
              $def\:x\,:\,\tau \text{ in } \mathbb{K}$.
            \item Igualdade de tipos: $\tau \equiv \tau'$.
@@ -173,7 +180,7 @@
         \[
              \begin{array}{lcl}
                  \mathbb{K} & ::= & \tau \equiv \tau \\
-                                    & \mid & typedef\:\tau \\
+                                    & \mid & typedef\:\tau\:as\:\tau \\
                                     & \mid & has(\tau, x' : \tau') \\
                                     & \mid & def\:x:\tau\:\text{ in
                                              }\mathbb{K}\\
@@ -260,8 +267,8 @@
                 \constr{l : \tau} & = & \rho(l) \equiv \tau\\
                 \constr{x : \tau} & = & x \equiv \tau \\
                 \constr{\circ : \tau} & = & \circ \equiv \tau \\
-                \constr{f : \tau^{1..n}\to \tau'} & = & f \equiv
-                                                        \tau^{1..n}\to
+                \constr{f : \tau\to \tau'} & = & f \equiv
+                                                        \tau\to
                                                         \tau' \\
                 \constr{e.x : \tau} & = & \exists
                                           \alpha_1\,\alpha_2. \constr{e
@@ -274,7 +281,7 @@
                                              \land\constr{e_1: \alpha_2}\land\\
                          & & \alpha_1\equiv\star\,\alpha_3 \land \tau
                              \equiv\alpha_3 \land \alpha_2 = int\\
-                \constr{(\tau')\,e:\tau} & = & \constr{e : \tau} \land
+                \constr{(\tau')\,e:\tau} & = & \exists \alpha. typedef\:\tau'\:as\:\alpha\land\constr{e : \tau} \land
                                                \tau \equiv \tau'\\
                 \constr{f(e^{i=1..n}) : \tau} & = & \exists
                                                     \alpha^{i=1..n}. \bigwedge_{i=1..n}\constr{e_i:\alpha_i}
@@ -320,10 +327,11 @@
            \begin{array}{lcl}
                \constr{\emptyset, \tau} & = & true \\
                \constr{\tau'\:x := e; S, \tau} & = & \exists \alpha. \constr{e : \alpha} \land
-                                              typedef\:\tau' \land
-                                              def\,x:\tau\,in\,\constr{S
+                                              typedef\:\tau' \: as \:
+                                                     \alpha \land
+                                              def\,x:\alpha\,in\,\constr{S
                                                      , \tau}
-             \land \tau \equiv \alpha\\
+             \land \tau' \equiv \alpha\\
                \constr{x := e ; S, \tau} & = & \exists \alpha. \constr{x : \alpha}\land\constr{e : \alpha} \land
                                                       \constr{S , \tau}\\ 
                \constr{\star\,x := e ; S, \tau} & = & \exists \alpha \alpha'. \constr{x : \alpha'}\land\constr{e : \alpha} \land
@@ -369,8 +377,8 @@
            \begin{array}{lcl}
                \constr{\emptyset} & = & true \\
                \constr{\texttt{typedef }\tau\:\:x\,,D} & = &
-                                                             typedef\:x\land
-                                                             x = \tau
+                                                             typedef\:x
+                                                             \:as\:\tau
                                                              \land \constr{D}\\
                \constr{\tau\:f\:\texttt{(}(\tau\:x)^{i=1..n}\texttt{)}
              \texttt{\{}C^*\texttt{\}} , D} & = & def\,\,f :
