@@ -201,10 +201,6 @@ Constraint generation algorithm
                               
 Auxiliar functions
 
-> isReturn :: Cmd -> Bool
-> isReturn (Return _) = True
-> isReturn _          = False
-         
 > varOp :: Op -> Type
 > varOp = Var . nameOp
 
