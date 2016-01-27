@@ -1,0 +1,1 @@
+def g = (int) in def k = int in int = int , (def m = int in int = int , (def n = int in int = int , (exists x_1 . exists x_2 . exists x_3 . exists x_4 . k = x_3 , (m = x_4 , + = (x_3,x_4,x_1)) , (n = x_2 , + = (x_1,x_2,int)))))

@@ -28,7 +28,10 @@ Solver top level function
 >                     r' <- S.solver t initialConf
 >                     case r' of
 >                       Left err' -> return (Left err')
->                       Right t'  -> return $ Right $ (map ((flip (++) "\n") . show . pprint) t')
+>                       Right t'  -> do
+>                                      let ss = map ((flip (++) "\n") . show . pprint) t'
+>                                      writeFile (f -<.> "tdef") (concat ss)         
+>                                      return $ Right $ ss
 
 
 > initialConf :: Conf

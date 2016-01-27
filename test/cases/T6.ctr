@@ -1,0 +1,1 @@
+def foo = (void) in isdef T , (def x = T in True) , (exists x_1 . x_1 = int , (val = x_1 , has(x ,x_1 val)))

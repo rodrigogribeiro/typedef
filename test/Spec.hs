@@ -1,3 +1,5 @@
+import Data.Either (isRight)
+
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -15,12 +17,14 @@ unitTests = testGroup "Unit tests"
                  testCase "Solver test for T2" $ execATest "./test/cases/T2.c",
                  testCase "Solver test for T3" $ execATest "./test/cases/T3.c",
                  testCase "Solver test for T4" $ execATest "./test/cases/T4.c",
-                 testCase "Solver test for T5" $ execATest "./test/cases/T5.c"]
+                 testCase "Solver test for T5" $ execATest "./test/cases/T5.c",
+                 testCase "Solver test for T6" $ execATest "./test/cases/T6.c"]
 
 
 execATest file = do               
                   c <- readFile file     
-                  ts <- solver c file
-                  either putStrLn (mapM_ putStrLn) ts
+                  r <- solver c file
+                  assertBool (show r) (isRight r)
+
 
                           
