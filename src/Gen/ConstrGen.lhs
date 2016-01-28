@@ -85,7 +85,7 @@ Constraint generation algorithm
 >                   exists v' $
 >                      do 
 >                        generate e (Var v)
->                        equality (Var n) (Var v')
+>                        generate (EVar n) (Var v')
 >                        has (Var v) n (Var v')
 >                        equality t (Var v')
 >     generate (AAccess e e') t

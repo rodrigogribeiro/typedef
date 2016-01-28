@@ -44,8 +44,6 @@ Solver top-level interface
 >                   go t@(Simple t') ac = DTypeDef t (sname t') : ac
 >                   step k t ac = DTypeDef t k : ac
 >                   fix = Map.foldrWithKey (\ k v ac -> if isVar v then Map.insert (outVar v) (Var k) ac else ac) Map.empty
->                   isVar (Var _) = True
->                   isVar _ = False
 >                   outVar (Var n) = n
 >                   cmp (DTypeDef _ n) (DTypeDef _ n') = n == n'                 
 >                   

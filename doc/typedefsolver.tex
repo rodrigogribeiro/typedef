@@ -7,7 +7,9 @@
 \usepackage{color}
 \usepackage{amssymb}
 
-\newcommand{\constr}[1]{\ensuremath{\langle\langle\,#1\,\rangle\rangle}}
+\newcommand{\constre}[1]{\ensuremath{\langle\langle\,#1\,\rangle\rangle_{e}}}
+\newcommand{\constrc}[1]{\ensuremath{\langle\langle\,#1\,\rangle\rangle_{s}}}
+\newcommand{\constrd}[1]{\ensuremath{\langle\langle\,#1\,\rangle\rangle_{d}}}
 
 \begin{document}
 
@@ -264,52 +266,52 @@
      \begin{figure}[h]
        \[\small{
             \begin{array}{lcl}
-                \constr{l : \tau} & = & \rho(l) \equiv \tau\\
-                \constr{x : \tau} & = & x \equiv \tau \\
-                \constr{\circ : \tau} & = & \circ \equiv \tau \\
-                \constr{f : \tau\to \tau'} & = & f \equiv
+                \constre{l : \tau} & = & \rho(l) \equiv \tau\\
+                \constre{x : \tau} & = & x \equiv \tau \\
+                \constre{\circ : \tau} & = & \circ \equiv \tau \\
+                \constre{f : \tau\to \tau'} & = & f \equiv
                                                         \tau\to
                                                         \tau' \\
-                \constr{e.x : \tau} & = & \exists
-                                          \alpha_1\,\alpha_2. \constr{e
-                                          : \alpha_1} \land \constr{x
+                \constre{e.x : \tau} & = & \exists
+                                          \alpha_1\,\alpha_2. \constre{e
+                                          : \alpha_1} \land \constre{x
                                           : \alpha_2} \land \\
                           & & has(\alpha_1,x:\alpha_2) \land \tau
                               \equiv \alpha_2\\
-                \constr{e[e_1] : \tau} & = & \exists
-                                         \alpha_1\alpha_2\alpha_3. \constr{e:\alpha_1}
-                                             \land\constr{e_1: \alpha_2}\land\\
+                \constre{e[e_1] : \tau} & = & \exists
+                                         \alpha_1\alpha_2\alpha_3. \constre{e:\alpha_1}
+                                             \land\constre{e_1: \alpha_2}\land\\
                          & & \alpha_1\equiv\star\,\alpha_3 \land \tau
-                             \equiv\alpha_3 \land \alpha_2 = int\\
-                \constr{(\tau')\,e:\tau} & = & \exists \alpha. typedef\:\tau'\:as\:\alpha\land\constr{e : \tau} \land
+                             \equiv\alpha_3 \land \alpha_2 \equiv int\\
+                \constre{(\tau')\,e:\tau} & = & \exists \alpha. typedef\:\tau'\:as\:\alpha\land\constre{e : \tau} \land
                                                \tau \equiv \tau'\\
-                \constr{f(e^{i=1..n}) : \tau} & = & \exists
-                                                    \alpha^{i=1..n}. \bigwedge_{i=1..n}\constr{e_i:\alpha_i}
-                                                    \land \constr{f :
+                \constre{f(e^{i=1..n}) : \tau} & = & \exists
+                                                    \alpha^{i=1..n}. \bigwedge_{i=1..n}\constre{e_i:\alpha_i}
+                                                    \land \constre{f :
                                                     \alpha^{i=1..n}
                                                     \to \tau} \\
-                     \constr{e \circ e' : \tau} & = & \exists
-                                                      \alpha_1\alpha_2.\constr{e
+                     \constre{e \circ e' : \tau} & = & \exists
+                                                      \alpha_1\alpha_2.\constre{e
                                                       :\alpha_1} \land
-                                                      \constr{e' :
+                                                      \constre{e' :
                                                       \alpha_2} \land
-                                                      \constr{\circ :
+                                                      \constre{\circ :
                                                       \alpha_1\to\alpha_2\to\tau}\\
-                     \constr{\&\,e : \tau} & = & \exists \alpha\,
-                                                 \alpha'. \constr{e :
+                     \constre{\&\,e : \tau} & = & \exists \alpha\,
+                                                 \alpha'. \constre{e :
                                                  \alpha'} \land
                                                  \alpha \equiv \star \alpha'
-                                                 \land \tau = \alpha\\
-                     \constr{\star\,e : \tau} & = & \exists
-                                                    \alpha. \constr{e
+                                                 \land \tau \equiv \alpha\\
+                     \constre{\star\,e : \tau} & = & \exists
+                                                    \alpha. \constre{e
                                                     : \alpha} \land
-                                                    \alpha = \star \tau\\
-                     \constr{e\to x : \tau} & = & \exists
-                                                  \alpha_1\alpha_2\alpha_3. \constr{e
+                                                    \alpha \equiv \star \tau\\
+                     \constre{e\to x : \tau} & = & \exists
+                                                  \alpha_1\alpha_2\alpha_3. \constre{e
                                                   :\alpha_1} \land
-                                                  \constr{x :
+                                                  \constre{x :
                                                   \alpha_3} \land
-                                                  \alpha_1 = \star\alpha_2
+                                                  \alpha_1 \equiv \star\alpha_2
                                                   \land\\
                           & & has(\alpha,x : \alpha_3) \land \tau
                               \equiv \alpha_3\\
@@ -325,47 +327,47 @@
        \[
           \small{
            \begin{array}{lcl}
-               \constr{\emptyset, \tau} & = & true \\
-               \constr{\tau'\:x := e; S, \tau} & = & \exists \alpha. \constr{e : \alpha} \land
+               \constrc{\emptyset, \tau} & = & true \\
+               \constrc{\tau'\:x := e; S, \tau} & = & \exists \alpha. \constre{e : \alpha} \land
                                               typedef\:\tau' \: as \:
                                                      \alpha \land
-                                              def\,x:\alpha\,in\,\constr{S
+                                              def\,x:\alpha\,in\,\constrc{S
                                                      , \tau}
              \land \tau' \equiv \alpha\\
-               \constr{x := e ; S, \tau} & = & \exists \alpha. \constr{x : \alpha}\land\constr{e : \alpha} \land
-                                                      \constr{S , \tau}\\ 
-               \constr{\star\,x := e ; S, \tau} & = & \exists \alpha \alpha'. \constr{x : \alpha'}\land\constr{e : \alpha} \land
+               \constrc{x := e ; S, \tau} & = & \exists \alpha. \constre{x : \alpha}\land\constre{e : \alpha} \land
+                                                      \constrc{S , \tau}\\ 
+               \constrc{\star\,x := e ; S, \tau} & = & \exists \alpha \alpha'. \constre{x : \alpha'}\land\constre{e : \alpha} \land
                                                       \alpha' \equiv
                                                 \star
-                                                      \alpha\land\constr{S
+                                                      \alpha\land\constrc{S
                                                       , \tau}\\ 
-               \constr{x[e'] := e ; S , \tau} & = &
-                                             \exists\alpha_1\alpha_2\alpha_3.\constr{e'
+               \constrc{x[e'] := e ; S , \tau} & = &
+                                             \exists\alpha_1\alpha_2\alpha_3.\constre{e'
                                              : \alpha_1}\land \alpha_1
-                                             = int \land \constr{e :
+                                             \equiv int \land \constre{e :
                                              \alpha_2} \land \\ 
-                       & & \constr{x : \alpha_3} \land
+                       & & \constre{x : \alpha_3} \land
                            \alpha_3 \equiv \star\,\alpha_2 \land
-                           \constr{S , \tau}\\
-               \constr{f(e^{i=1..n}) ; S , \tau} & = & \exists
+                           \constrc{S , \tau}\\
+               \constrc{f(e^{i=1..n}) ; S , \tau} & = & \exists
                                             \alpha_{i=1..n +1}.\bigwedge_{i
-                                            = 1..n}\constr{e_i :
-                                            \alpha_i} \land \constr{f
+                                            = 1..n}\constre{e_i :
+                                            \alpha_i} \land \constre{f
                                             : \alpha_{i = 0.. n} \to
                                             \alpha_{n + 1}} \land
-                                                \constr{S , \tau}\\
-               \constr{\texttt{while (} e
-             \texttt{)\{}C\texttt{\}} ; S , \tau} &= & \constr{e : bool}
+                                                \constrc{S , \tau}\\
+               \constrc{\texttt{while (} e
+             \texttt{)\{}C\texttt{\}} ; S , \tau} &= & \constre{e : bool}
                                                      \land
-                                                     \constr{C
+                                                     \constrc{C
                                                             , \tau}
-                                                                \land \constr{S,\tau}\\
-             \constr{\texttt{if (} e \texttt{)\{} C
-             \texttt{\}} ; S , \tau} & = & \constr{e : bool}
+                                                                \land \constrc{S,\tau}\\
+             \constrc{\texttt{if (} e \texttt{)\{} C
+             \texttt{\}} ; S , \tau} & = & \constre{e : bool}
                                                      \land
-                                                     \constr{C
-                                       , \tau} \land \constr{S,\tau}\\
-             \constr{\texttt{return }e, \tau} & = & \constr{e : \tau}
+                                                     \constrc{C
+                                       , \tau} \land \constrc{S,\tau}\\
+             \constrc{\texttt{return }e, \tau} & = & \constre{e : \tau}
            \end{array}}
        \]
        \caption{Gerador de restrições --- parte 2}
@@ -375,12 +377,12 @@
        \[
          \small{
            \begin{array}{lcl}
-               \constr{\emptyset} & = & true \\
-               \constr{\texttt{typedef }\tau\:\:x\,,D} & = &
+               \constrd{\emptyset} & = & true \\
+               \constrd{\texttt{typedef }\tau\:\:x\,,D} & = &
                                                              typedef\:x
                                                              \:as\:\tau
-                                                             \land \constr{D}\\
-               \constr{\tau\:f\:\texttt{(}(\tau\:x)^{i=1..n}\texttt{)}
+                                                             \land \constrd{D}\\
+               \constrd{\tau\:f\:\texttt{(}(\tau\:x)^{i=1..n}\texttt{)}
              \texttt{\{}C^*\texttt{\}} , D} & = & def\,\,f :
                                                        \tau_{i =
                                                        1.. n}\to \tau
@@ -388,8 +390,8 @@
                                                        (def\,\,x_i :
                                                        \tau_i)_{i
                                                        = 1..n}\: in\:
-                                                       \constr{C,\tau}
-                                                       \land \constr{D}
+                                                       \constrc{C,\tau}
+                                                       \land \constrd{D}
            \end{array}
          }
        \]
