@@ -29,12 +29,13 @@ Constraint parser
 > constraintParser :: Parser Constr
 > constraintParser = Ex.buildExpressionParser opTable ctrParser
 >                    where
->                      opTable = [[ Ex.Infix conjParser Ex.AssocRight ]]
+>                      opTable = [[ Ex.Infix conjParser Ex.AssocLeft ]]
 >                      conjParser = (:&:) <$ comma          
 
 > ctrParser :: Parser Constr
-> ctrParser = choice [ existsParser, hasParser , eqParser
->                    , defParser, isDefParser, truthParser
+> ctrParser = choice [ existsParser, hasParser , varAscriptionParser
+>                    , eqParser 
+>                    , defParser, typeDefParser, truthParser
 >                    , parens ctrParser ]
 
 > existsParser :: Parser Constr
@@ -45,6 +46,18 @@ Constraint parser
 > hasParser = reserved "has" *> parens (Has <$> nameParser <*>
 >                                               (comma *> fieldParser))
 
+
+> varAscriptionParser :: Parser Constr
+> varAscriptionParser = build <$> reserved "typeof" <*>
+>                                 parens nameParser <*>
+>                                 reservedOp "="    <*>
+>                                 (normal <|> funP)
+>                       where
+>                         build _ n _ (Left t) =  n :<-: t
+>                         build _ n _ (Right ts) = n :<-: (Simple $ Function n (last ts) (init ts))                            
+>                         normal = Left <$> typeParser
+>                         funP = Right <$> functionParser
+                                                
 > eqParser :: Parser Constr
 > eqParser = build <$> typeParser <*> (reservedOp "=" *> (normal <|> funP))
 >            where
@@ -62,8 +75,11 @@ Constraint parser
 >                f n (Left t) c = Def n t c
 >                f n (Right ts) c = Def n (Simple $ Function n (last ts) (init ts)) c               
   
-> isDefParser :: Parser Constr
-> isDefParser = reserved "isdef" *> (IsDefined <$> nameParser)
+> typeDefParser :: Parser Constr
+> typeDefParser = reserved "typedef" *>
+>                 ((\n _ t -> TypeDef n t) <$> nameParser <*>
+>                                              reserved "as" <*>
+>                                              typeParser)
 
 > truthParser :: Parser Constr
 > truthParser = Truth <$ reserved "True"
@@ -87,7 +103,7 @@ CType parser
 >                      , structParser, pointerParser ]               
 
 > fieldParser :: Parser Field
-> fieldParser = flip Field <$> typeParser <*> nameParser
+> fieldParser = (\t _ n -> Field n t) <$> typeParser <*> colon <*> nameParser
 
 > boolParser :: Parser CType
 > boolParser = CBool <$ reserved "_Bool"
@@ -180,11 +196,11 @@ Constraint language def
 > constrDef :: LanguageDef st
 > constrDef = emptyDef {
 >               Tk.reservedOpNames = [":", "=", "->"] 
->             , Tk.reservedNames = ["exists", "def", "isdef", "True"
+>             , Tk.reservedNames = ["exists", "def", "in", "typedef", "True"
 >                                  , "short", "long", "int", "float"
 >                                  , "double", "_Bool", "_Complex"
->                                  , "char", "signed", "unsigned"
->                                  , "void", "struct", "has", "eq"]
+>                                  , "char", "signed", "unsigned", "as"
+>                                  , "void", "struct", "has"]
 >             }             
 
               

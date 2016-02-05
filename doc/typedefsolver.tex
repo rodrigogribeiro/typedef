@@ -176,7 +176,7 @@
            \item Nova variável de tipo: $\exists \,\alpha. \mathbb{K}$
        \end{itemize}
 
-     A sintaxe de restrições é apresentada a seguir. 
+     A sintaxe (abstrata) de restrições é apresentada a seguir. 
 
      \begin{figure}[h]
         \[
@@ -195,6 +195,28 @@
         \caption{Sintaxe de restrições}
         \label{figconstrsyn}
       \end{figure}
+
+      A seguir apresentamos a sintaxe concreta de restrições.
+
+     \begin{figure}[h]
+       \begin{tabular}{lcl}
+          \texttt{C} & \texttt{::=} & \texttt{T = T} \\
+                          & $\mid$     & \texttt{typedef T as T}\\
+                          & $\mid$     & \texttt{typeof(x) = T}\\
+                          & $\mid$     & \texttt{has(T, x : T)}\\
+                          & $\mid$     & \texttt{def x : T in C}\\
+                          & $\mid$     & \texttt{exists a. C}\\
+                          & $\mid$     & \texttt{C , C}\\
+                          & $\mid$     & \texttt{(C)}\\
+       \end{tabular}
+        \centering
+        \caption{Sintaxe concreta de restrições}
+        \label{concreta}
+      \end{figure}
+
+      Nesta sintaxe, usamos as meta-variáveis \texttt{T} para
+      representar tipos, \texttt{x} identificadores e \texttt{a}
+      denota uma variável de tipo.
 
      \section{Semântica de Restrições}\label{semantics}
 
@@ -383,12 +405,15 @@
                                                              \:as\:\tau
                                                              \land \constrd{D}\\
                \constrd{\tau\:f\:\texttt{(}(\tau\:x)^{i=1..n}\texttt{)}
-             \texttt{\{}C^*\texttt{\}} , D} & = & def\,\,f :
-                                                       \tau_{i =
+             \texttt{\{}C^*\texttt{\}} , D} & = & \exists \alpha^{i =
+                                                  1..n}. (typedef\:\tau_i\:as\:\alpha_i)^{1..n}
+                                                  \land def\,\,f :
+                                                       \tau^{i =
                                                        1.. n}\to \tau
-                                                       \:in\: 
+                                                       \:in\\
+                           & &
                                                        (def\,\,x_i :
-                                                       \tau_i)_{i
+                                                       \tau_i)^{i
                                                        = 1..n}\: in\:
                                                        \constrc{C,\tau}
                                                        \land \constrd{D}

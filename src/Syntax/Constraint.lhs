@@ -18,12 +18,13 @@ Definition of constraints
 
 > data Constr = Exists Name Constr   -- fresh variable introduction
 >             | Constr :&: Constr    -- conjunction
->             | Type :=: Type        -- equality
+>             | Type :=: Type        -- type equality
+>             | Name :<-: Type       -- type ascription 
 >             | Has Name Field       -- field constraint
 >             | Def Name Type Constr -- definition and its type
->             | IsDefined Name       -- use of a possible type definition  
+>             | TypeDef Name Type    -- type definition
 >             | Truth                -- empty constraint  
->             deriving (Eq, Ord, Show, Data, Typeable)
+>             deriving (Eq, Ord, Data, Typeable)
 
 Constraints form a monoid
 
@@ -38,19 +39,26 @@ Constraints form a monoid
 
 Definition of a pretty printer
 
+> instance Show Constr where
+>     show = show . pprint
+
 > instance PPrint Constr where
 >     pprint (Exists n c) = hsep [text "exists", pprint n, dot, pprint c]
 >     pprint (c :&: c')
 >            | isGround c' = hsep [pprint c, comma, pprint c']
 >            | otherwise =  hsep [pprint c, comma, parens $ pprint c']               
 >     pprint (t :=: t') = pprint t <+> equals <+> pprint t'
+>     pprint (n :<-: t) = text "typeof" <> (parens (pprint n)) <+>
+>                         equals <+> pprint t
 >     pprint (Has n f)  = text "has" <> parens (pprint n <+>
 >                                               comma    <>
 >                                               pprint f)
 >     pprint (Def n t c) = text "def"    <+> pprint n
->                          <+> equals    <+> pprint t
+>                          <+> colon     <+> pprint t
 >                          <+> text "in" <+> pprint c 
->     pprint (IsDefined n) = text "isdef" <+> pprint n                       
+>     pprint (TypeDef n t) = text "typedef" <+> pprint n
+>                                           <+> text "as"
+>                                           <+> pprint t    
 >     pprint Truth = text "True"                       
                          
 Auxiliar functions
